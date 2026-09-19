@@ -92,7 +92,10 @@ public class ProductService {
     // ==========================================================
     public void deleteProduct(String id) {
         // TODO: viết logic delete tại đây
-        throw new UnsupportedOperationException(
-                "TODO: Sinh vien chua implement deleteProduct()");
+        if (!productRepository.existsById(id)) {
+            throw new ProductNotFoundException(id);
+        }
+
+        productRepository.deleteById(id);
     }
 }
