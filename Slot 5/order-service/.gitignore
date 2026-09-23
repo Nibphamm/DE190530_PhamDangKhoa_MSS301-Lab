@@ -1,5 +1,9 @@
 HELP.md
 target/
+
+# Locally generated submission reports
+report/*.docx
+report/~$*.docx
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
