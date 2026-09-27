@@ -1,5 +1,6 @@
 package com.fudn.orderservice.service;
 
+import com.fudn.orderservice.client.InventoryClient;
 import com.fudn.orderservice.dto.OrderRequest;
 import com.fudn.orderservice.model.Order;
 import com.fudn.orderservice.repository.OrderRepository;
@@ -14,8 +15,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final InventoryClient inventoryClient;
 
     public void placeOrder(OrderRequest orderRequest) {
+        boolean inStock = inventoryClient.isInStock(
+                orderRequest.skuCode(), orderRequest.quantity());
+        if (!inStock) {
+            throw new RuntimeException(
+                    "Product with Skucode " + orderRequest.skuCode() + " is not in stock");
+        }
+
         var order = mapToOrder(orderRequest);
         orderRepository.save(order);
     }
