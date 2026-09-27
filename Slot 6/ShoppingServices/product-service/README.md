@@ -1,6 +1,6 @@
-# OnlineShopping — Product Service 
+# OnlineShopping — Product Service
 
-Project mẫu cho môn **MSS301 — Microservices with Spring Boot**. Sinh viên hoàn thiện 2 chức năng còn thiếu: **UPDATE** và **DELETE** sản phẩm. 
+Project mẫu cho môn **MSS301 — Microservices with Spring Boot**. Sinh viên hoàn thiện 2 chức năng còn thiếu: **UPDATE** và **DELETE** sản phẩm.
 ---
 
 ## 1. Tổng quan project
@@ -193,5 +193,3 @@ product-service/src/main/java/com/fudn/product_service/
     ├── ProductNotFoundException.java   ← đã tạo sẵn
     └── GlobalExceptionHandler.java     ← TODO 5: sinh viên tạo file này
 ```
-
-

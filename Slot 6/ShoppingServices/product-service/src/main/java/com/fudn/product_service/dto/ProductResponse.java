@@ -8,4 +8,3 @@ import java.math.BigDecimal;
 // hoặc bất kỳ thông tin nào khác mà bạn muốn gửi lại cho client sau khi tạo hoặc lấy thông tin sản phẩm.
 public record ProductResponse(String id, String name, String description, BigDecimal price) {
 }
-
