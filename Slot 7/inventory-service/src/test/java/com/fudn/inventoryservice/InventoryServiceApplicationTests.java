@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.mysql.MySQLContainer;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class InventoryServiceApplicationTests {
 
     @ServiceConnection
-    static MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.3.0");
+    static MySQLContainer mySQLContainer = new MySQLContainer("mysql:8.3.0");
 
     @LocalServerPort
     private Integer port;
