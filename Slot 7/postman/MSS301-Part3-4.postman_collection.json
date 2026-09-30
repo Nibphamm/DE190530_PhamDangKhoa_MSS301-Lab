@@ -1,0 +1,57 @@
+{
+  "info": {
+    "name": "MSS301 - Part 3-4",
+    "description": "Run Get access token first. The lab realm uses client credentials with a 300 second token lifespan.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key":"gateway","value":"http://localhost:9000"},
+    {"key":"keycloak","value":"http://localhost:8181/realms/spring-microservices-realm"},
+    {"key":"clientId","value":"spring-microservices-client"},
+    {"key":"clientSecret","value":"mss301-dev-secret-change-me"},
+    {"key":"accessToken","value":""}
+  ],
+  "auth": {"type":"bearer","bearer":[{"key":"token","value":"{{accessToken}}","type":"string"}]},
+  "item": [
+    {
+      "name":"Get access token",
+      "request": {
+        "auth":{"type":"basic","basic":[{"key":"username","value":"{{clientId}}","type":"string"},{"key":"password","value":"{{clientSecret}}","type":"string"}]},
+        "method":"POST",
+        "header":[],
+        "url":"{{keycloak}}/protocol/openid-connect/token",
+        "body":{"mode":"urlencoded","urlencoded":[{"key":"grant_type","value":"client_credentials","type":"text"}]}
+      },
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('Token granted', () => pm.response.to.have.status(200));","const tokenPayload = pm.response.json();","pm.test('Token lifespan is 300 seconds', () => pm.expect(tokenPayload.expires_in).to.eql(300));","pm.collectionVariables.set('accessToken', tokenPayload.access_token);"]}}]
+    },
+    {
+      "name":"Part3 - Direct",
+      "item":[
+        {"name":"Inventory quantity 100","request":{"auth":{"type":"noauth"},"method":"GET","url":"http://localhost:8082/api/inventory?skuCode=iphone_15&quantity=100"},"event":[{"listen":"test","script":{"exec":["pm.test('In stock', () => { pm.response.to.have.status(200); pm.expect(pm.response.json()).to.eql(true); });"]}}]},
+        {"name":"Inventory quantity 101","request":{"auth":{"type":"noauth"},"method":"GET","url":"http://localhost:8082/api/inventory?skuCode=iphone_15&quantity=101"},"event":[{"listen":"test","script":{"exec":["pm.test('Out of stock', () => { pm.response.to.have.status(200); pm.expect(pm.response.json()).to.eql(false); });"]}}]},
+        {"name":"Order quantity 100","request":{"auth":{"type":"noauth"},"method":"POST","url":"http://localhost:8081/api/order","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"skuCode\":\"iphone_15\",\"price\":1000,\"quantity\":100}"}},"event":[{"listen":"test","script":{"exec":["pm.test('Order created', () => { pm.response.to.have.status(201); pm.expect(pm.response.text()).to.eql('Order Placed Successfully'); });"]}}]},
+        {"name":"Order quantity 101","request":{"auth":{"type":"noauth"},"method":"POST","url":"http://localhost:8081/api/order","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"skuCode\":\"iphone_15\",\"price\":1000,\"quantity\":101}"}},"event":[{"listen":"test","script":{"exec":["pm.test('Out of stock fails', () => pm.response.to.have.status(500));"]}}]}
+      ]
+    },
+    {
+      "name":"Part4 - Gateway",
+      "item":[
+        {"name":"Public health","request":{"auth":{"type":"noauth"},"method":"GET","url":"{{gateway}}/actuator/health"},"event":[{"listen":"test","script":{"exec":["pm.test('Healthy', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().status).to.eql('UP'); });"]}}]},
+        {"name":"Create product","request":{"method":"POST","url":"{{gateway}}/api/products","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"name\":\"iPhone 15\",\"description\":\"Apple smartphone\",\"price\":1000}"}},"event":[{"listen":"test","script":{"exec":["pm.test('Product created', () => { pm.response.to.have.status(201); pm.expect(pm.response.json().id).to.be.a('string'); });"]}}]},
+        {"name":"List products","request":{"method":"GET","url":"{{gateway}}/api/products"},"event":[{"listen":"test","script":{"exec":["pm.test('Products listed', () => { pm.response.to.have.status(200); pm.expect(pm.response.json()).to.be.an('array'); });"]}}]},
+        {"name":"Check inventory","request":{"method":"GET","url":"{{gateway}}/api/inventory?skuCode=iphone_15&quantity=1"},"event":[{"listen":"test","script":{"exec":["pm.test('Inventory routed', () => { pm.response.to.have.status(200); pm.expect(pm.response.json()).to.eql(true); });"]}}]},
+        {"name":"Place order","request":{"method":"POST","url":"{{gateway}}/api/order","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"skuCode\":\"iphone_15\",\"price\":1000,\"quantity\":1}"}},"event":[{"listen":"test","script":{"exec":["pm.test('Order created', () => { pm.response.to.have.status(201); pm.expect(pm.response.text()).to.eql('Order Placed Successfully'); });"]}}]},
+        {"name":"Out of stock order","request":{"method":"POST","url":"{{gateway}}/api/order","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"skuCode\":\"iphone_15\",\"price\":1000,\"quantity\":101}"}},"event":[{"listen":"test","script":{"exec":["pm.test('Stock check fails', () => pm.response.to.have.status(500));"]}}]},
+        {"name":"Unknown route","request":{"method":"GET","url":"{{gateway}}/api/khong-co-route"},"event":[{"listen":"test","script":{"exec":["pm.test('Unknown route', () => pm.response.to.have.status(404));"]}}]}
+      ]
+    },
+    {
+      "name":"Part4 - Negative",
+      "item":[
+        {"name":"Missing token","request":{"auth":{"type":"noauth"},"method":"GET","url":"{{gateway}}/api/products"},"event":[{"listen":"test","script":{"exec":["pm.test('Unauthorized', () => { pm.response.to.have.status(401); pm.response.to.have.header('WWW-Authenticate'); });"]}}]},
+        {"name":"Malformed token","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"abc.def.ghi","type":"string"}]},"method":"GET","url":"{{gateway}}/api/products"},"event":[{"listen":"test","script":{"exec":["pm.test('Invalid token', () => { pm.response.to.have.status(401); pm.expect(pm.response.headers.get('WWW-Authenticate')).to.include('invalid_token'); });"]}}]},
+        {"name":"Wrong client secret","request":{"auth":{"type":"noauth"},"method":"POST","url":"{{keycloak}}/protocol/openid-connect/token","body":{"mode":"urlencoded","urlencoded":[{"key":"grant_type","value":"client_credentials"},{"key":"client_id","value":"{{clientId}}"},{"key":"client_secret","value":"wrong-secret"}]}},"event":[{"listen":"test","script":{"exec":["pm.test('Invalid client', () => pm.response.to.have.status(401));"]}}]}
+      ]
+    }
+  ]
+}
