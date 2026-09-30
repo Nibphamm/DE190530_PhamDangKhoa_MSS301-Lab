@@ -1,0 +1,23 @@
+{
+  "realm": "spring-microservices-realm",
+  "enabled": true,
+  "accessTokenLifespan": 300,
+  "clients": [
+    {
+      "clientId": "spring-microservices-client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "mss301-dev-secret-change-me",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": "false"
+      }
+    }
+  ]
+}
