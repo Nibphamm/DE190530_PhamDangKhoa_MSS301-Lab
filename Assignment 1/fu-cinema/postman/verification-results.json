@@ -1,0 +1,575 @@
+{
+  "executedAt": "2026-10-07T23:10:05.374581+07:00",
+  "runner": "Newman 6.2.2; Postman Desktop screenshot pending",
+  "junit": [
+    {
+      "service": "customer-service",
+      "passed": 6,
+      "failed": 0
+    },
+    {
+      "service": "movie-service",
+      "passed": 7,
+      "failed": 0
+    },
+    {
+      "service": "booking-service",
+      "passed": 13,
+      "failed": 0
+    },
+    {
+      "service": "api-gateway",
+      "passed": 1,
+      "failed": 0
+    }
+  ],
+  "junitTotal": 27,
+  "mainCollection": {
+    "requests": 85,
+    "assertions": 236,
+    "failed": 0,
+    "cases": [
+      {
+        "name": "1.1 Login admin",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "1.2 Login customer",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "1.3 Wrong password",
+        "status": 401,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "1.4 Inactive account",
+        "status": 403,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "1.5 Invalid login fields",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "1.6 Missing JWT",
+        "status": 401,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "1.7 Invalid JWT",
+        "status": 401,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "2.1 Register customer",
+        "status": 201,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "2.2 Duplicate email",
+        "status": 409,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "2.3 Invalid registration",
+        "status": 400,
+        "assertionsPassed": 4
+      },
+      {
+        "name": "2.4 Login new customer",
+        "status": 200,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "2.5 Read own profile",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "2.6 Update unicode profile",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "2.7 Wrong old password",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "2.8 Change password",
+        "status": 204,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "2.9 Login with new password",
+        "status": 200,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "2.10 Customer cannot list accounts",
+        "status": 403,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "2.11 Admin search customers",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "2.12 Missing customer",
+        "status": 404,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "2.13 Admin creates customer",
+        "status": 201,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "2.14 Admin updates customer",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "2.15 Soft delete customer",
+        "status": 204,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "2.16 Read inactive customer",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "2.17 Admin cannot use customer profile",
+        "status": 403,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "2.18 Spoofed user context",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "3.1 Public genre list",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "3.2 Create genre",
+        "status": 201,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "3.3 Customer cannot create genre",
+        "status": 403,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "3.4 Duplicate genre",
+        "status": 409,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "3.5 Update genre",
+        "status": 200,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "3.6 Protect action genre with movie",
+        "status": 409,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "3.7 Create room",
+        "status": 201,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "3.8 Rooms require admin",
+        "status": 401,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "3.9 Invalid room type",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "3.10 Invalid seat rows",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "4.1 Create movie",
+        "status": 201,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "4.2 Search movie keyword",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "4.3 Filter movie genre and status",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "4.4 Update movie",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "4.5 Missing movie",
+        "status": 404,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "4.6 Invalid duration",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "4.7 Missing genre reference",
+        "status": 404,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "4.8 Protect genre with movie",
+        "status": 409,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "5.1 Schedule showtime",
+        "status": 201,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "5.2 Reject overlapping showtime",
+        "status": 409,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "5.3 Allow same time in other room",
+        "status": 201,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "5.4 Reject ended movie",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "5.5 Reject room under maintenance",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "5.6 Reject past start time",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "5.7 Filter movie and date",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "5.8 Read showtime room layout",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "5.9 Cancel showtime",
+        "status": 204,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "5.10 Read cancelled showtime",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "5.11 Protect room with showtime",
+        "status": 409,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "5.12 Protect movie with showtime",
+        "status": 409,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "5.13 Missing movie reference",
+        "status": 404,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "6.1 Public empty seat map",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "6.2 Book two seats",
+        "status": 201,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "6.3 Reject sold seat",
+        "status": 409,
+        "assertionsPassed": 4
+      },
+      {
+        "name": "6.4 Seat number outside room",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "6.5 Row outside room",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "6.6 Duplicate seats in request",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "6.7 Missing showtime",
+        "status": 404,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "6.8 Cancelled showtime",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "6.9 More than eight tickets",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "6.10 Empty booking",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "6.11 Admin cannot book tickets",
+        "status": 403,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "6.12 Unauthenticated booking",
+        "status": 401,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "6.13 Second customer books seat",
+        "status": 201,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "6.14 Updated seat map",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "7.1 Own booking history",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "7.2 Other customer cannot read booking",
+        "status": 403,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "7.3 Admin reads booking",
+        "status": 200,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "7.4 Other customer cannot cancel booking",
+        "status": 403,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "7.5 Owner cancels booking",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "7.6 Cannot cancel twice",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "7.7 Released seat can be booked again",
+        "status": 201,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "7.8 Admin lists all bookings",
+        "status": 200,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "7.9 Admin cannot use customer history",
+        "status": 403,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "7.10 Missing booking",
+        "status": 404,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "8.1 Confirmed revenue report",
+        "status": 200,
+        "assertionsPassed": 4
+      },
+      {
+        "name": "8.2 Invalid report period",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "8.3 Customer cannot report",
+        "status": 403,
+        "assertionsPassed": 2
+      },
+      {
+        "name": "8.4 Missing report end date",
+        "status": 400,
+        "assertionsPassed": 3
+      },
+      {
+        "name": "8.5 Empty historical report",
+        "status": 200,
+        "assertionsPassed": 3
+      }
+    ]
+  },
+  "liveMovieOutage": {
+    "requests": 1,
+    "assertions": 2,
+    "failed": 0,
+    "cases": [
+      {
+        "name": "6.15 Movie service unavailable",
+        "status": 503,
+        "assertionsPassed": 2
+      }
+    ]
+  },
+  "additionalBookingChecks": {
+    "executedAt": "2026-10-07T23:08:34.095817+07:00",
+    "checks": [
+      {
+        "name": "Null ticket returns 400",
+        "status": 400,
+        "passed": true
+      },
+      {
+        "name": "Malformed seat returns 400",
+        "status": 400,
+        "passed": true
+      },
+      {
+        "name": "Seat map before rejected multi-ticket booking",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "Multi-ticket booking rejects one sold seat",
+        "status": 409,
+        "passed": true
+      },
+      {
+        "name": "Rejected booking reserves no partial seats",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "Spoofed booking owner is ignored",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "name": "Schedule near-term showtime",
+        "status": 201,
+        "passed": true
+      },
+      {
+        "name": "Book near-term ticket",
+        "status": 201,
+        "passed": true
+      },
+      {
+        "name": "Customer cannot cancel less than two hours before start",
+        "status": 400,
+        "passed": true
+      },
+      {
+        "name": "Admin can cancel inside two-hour deadline",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "Cancelled near-term ticket releases seat",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "Booking supports tickets from different showtimes",
+        "status": 201,
+        "passed": true
+      },
+      {
+        "name": "Earliest showtime governs mixed-booking cancellation",
+        "status": 400,
+        "passed": true
+      },
+      {
+        "name": "Admin cancels mixed-showtime booking",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "Read persisted Unicode booking snapshot",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "Report excludes additional cancelled test bookings",
+        "status": 200,
+        "passed": true
+      }
+    ],
+    "total": 16,
+    "failed": 0
+  },
+  "outageReadChecks": [
+    {
+      "name": "Booking snapshot while Movie Service is stopped",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "name": "Revenue report while Movie Service is stopped",
+      "status": 200,
+      "passed": true
+    }
+  ],
+  "mysqlChecks": "1\t1\nshowtime_id\tvarchar\t24\nmovie_id\tvarchar\t24\nHành Trình Phương Nam\nCONFIRMED\t2\nCANCELLED\t3",
+  "pending": [
+    "Postman Desktop Collection Runner screenshot",
+    "Submission tag v1.0.0 after screenshot is added"
+  ]
+}

@@ -100,6 +100,8 @@ Collection sinh email, tên thể loại/phòng mới khi chạy. Tài khoản m
 
 Kết quả thực tế và các bước còn chờ thực hiện được ghi tại [TEST_RESULTS.md](TEST_RESULTS.md).
 
+Đã xác minh toàn bộ hệ thống với ba database Docker: **27 test JUnit**, **85 request / 236 assertion trong collection chính**, BR14 thực tế và các kiểm tra bổ sung đều pass. Chi tiết tại [verification-results.json](postman/verification-results.json). Hiện còn chờ ảnh Postman Desktop Runner để hoàn tất tài liệu nộp bài và gắn tag `v1.0.0`.
+
 Khi ba database đã sẵn sàng, chạy JUnit và kiểm tra ApplicationContext:
 
 ```powershell
