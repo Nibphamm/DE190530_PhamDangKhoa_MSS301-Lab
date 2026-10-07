@@ -72,12 +72,51 @@ public class CustomerService {
         customerRepository.save(customer);
     }
 
+    // ===================== ADMIN (F3) =====================
 
+    // TODO 3.2
+    public List<CustomerResponse> search(String keyword) {
+        List<Customer> customers = (keyword == null || keyword.isBlank())
+                ? customerRepository.findAll(Sort.by("customerId"))
+                : customerRepository.findByCustomerNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrderByCustomerIdAsc(
+                        keyword.trim(), keyword.trim());
+        return customers.stream().map(CustomerResponse::from).toList();
+    }
 
+    public CustomerResponse getById(Long id) {
+        return CustomerResponse.from(findCustomer(id));
+    }
 
+    @Transactional
+    public CustomerResponse create(AdminCustomerRequest request) {
+        if (request.password() == null || request.password().isBlank()) {
+            throw ApiException.badRequest("password: Password is required when creating a customer");
+        }
+        ensureEmailAvailable(request.email(), null);
+        Customer customer = new Customer();
+        applyAdminRequest(customer, request);
+        customer.setPassword(passwordEncoder.encode(request.password()));
+        return CustomerResponse.from(customerRepository.save(customer));
+    }
+
+    @Transactional
+    public CustomerResponse update(Long id, AdminCustomerRequest request) {
+        Customer customer = findCustomer(id);
+        ensureEmailAvailable(request.email(), id);
+        applyAdminRequest(customer, request);
+        if (request.password() != null && !request.password().isBlank()) {
+            customer.setPassword(passwordEncoder.encode(request.password()));
+        }
+        return CustomerResponse.from(customerRepository.save(customer));
+    }
 
     /** Xoa mem: chuyen INACTIVE de giu lich su booking (booking-service van tham chieu customerId). */
-
+    @Transactional
+    public void delete(Long id) {
+        Customer customer = findCustomer(id);
+        customer.setCustomerStatus(CustomerStatus.INACTIVE);
+        customerRepository.save(customer);
+    }
 
     // ===================== HELPER =====================
 
