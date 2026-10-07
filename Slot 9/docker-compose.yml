@@ -1,0 +1,61 @@
+name: mss301-slot9
+services:
+  mongodb:
+    image: mongo:7.0.5
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: product-service
+    volumes:
+      - mongo-data:/data/db
+  mysql:
+    image: mysql:8.3.0
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+    volumes:
+      - ./order-service/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pmysql"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  keycloak-mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: keycloak
+      MYSQL_USER: keycloak
+      MYSQL_PASSWORD: password
+    volumes:
+      - keycloak-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://keycloak-mysql:3306/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8181:8080"
+    volumes:
+      - ./api-gateway/docker/keycloak/realms:/opt/keycloak/data/import:ro
+    depends_on:
+      keycloak-mysql:
+        condition: service_healthy
+volumes:
+  mongo-data:
+  mysql-data:
+  keycloak-data:
