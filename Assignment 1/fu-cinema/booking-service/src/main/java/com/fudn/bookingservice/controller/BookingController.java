@@ -38,8 +38,32 @@ public class BookingController {
         return bookingService.create(userId, request);
     }
 
+    // CUSTOMER
+    @GetMapping("/my")
+    public List<BookingResponse> getMyBookings(@RequestHeader(USER_ID) Long userId) {
+        return bookingService.getMyBookings(userId);
+    }
+
+    // ADMIN
+    @GetMapping
+    public List<BookingResponse> getAll() {
+        return bookingService.getAll();
+    }
 
 
+    // Owner hoac ADMIN
+    @GetMapping("/{id}")
+    public BookingResponse getById(@PathVariable Long id,
+                                   @RequestHeader(USER_ID) Long userId,
+                                   @RequestHeader(value = USER_ROLE, required = false) String role) {
+        return bookingService.getById(id, userId, role);
+    }
 
-
+    // Owner hoac ADMIN
+    @PutMapping("/{id}/cancel")
+    public BookingResponse cancel(@PathVariable Long id,
+                                  @RequestHeader(USER_ID) Long userId,
+                                  @RequestHeader(value = USER_ROLE, required = false) String role) {
+        return bookingService.cancel(id, userId, role);
+    }
 }
