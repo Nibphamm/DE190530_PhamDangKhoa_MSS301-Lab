@@ -1,0 +1,37 @@
+package com.fudn.orderservice.service;
+
+import com.fudn.orderservice.client.InventoryClient;
+import com.fudn.orderservice.dto.OrderRequest;
+import com.fudn.orderservice.model.Order;
+import com.fudn.orderservice.repository.OrderRepository;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class OrderService {
+
+    private final OrderRepository orderRepository;
+    private final InventoryClient inventoryClient;
+
+    public void placeOrder(OrderRequest orderRequest) {
+        if (!inventoryClient.isInStock(orderRequest.skuCode(), orderRequest.quantity())) {
+            throw new RuntimeException(
+                    "Product with SkuCode " + orderRequest.skuCode() + " is not in stock");
+        }
+        var order = mapToOrder(orderRequest);
+        orderRepository.save(order);
+    }
+
+    private static Order mapToOrder(OrderRequest orderRequest) {
+        Order order = new Order();
+        order.setOrderNumber(UUID.randomUUID().toString());
+        order.setPrice(orderRequest.price());
+        order.setQuantity(orderRequest.quantity());
+        order.setSkuCode(orderRequest.skuCode());
+        return order;
+    }
+}
