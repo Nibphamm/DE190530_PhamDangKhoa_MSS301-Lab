@@ -11,6 +11,7 @@ public record ShowtimeRequest(
         @NotNull(message = "Start time is required")
         @Future(message = "Start time must be in the future") LocalDateTime startTime,
         @NotNull(message = "Ticket price is required")
+        @Digits(integer = 7, fraction = 2, message = "Ticket price must have at most 2 decimal places")
         @DecimalMin(value = "10000", message = "Ticket price must be at least 10,000")
         @DecimalMax(value = "1000000", message = "Ticket price must not exceed 1,000,000") BigDecimal ticketPrice) {
 }
