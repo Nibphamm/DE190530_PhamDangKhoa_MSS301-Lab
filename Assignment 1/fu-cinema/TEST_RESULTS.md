@@ -37,6 +37,6 @@ Sinh viên cung cấp [ảnh Collection Runner](postman/Result.png) của lần 
 
 Lần chạy trước có 6 assertion thất bại bắt nguồn từ request 5.3 xung đột với suất chiếu thử nghiệm cũ còn SCHEDULED trong Room 02. Ảnh Desktop mới xác nhận toàn bộ assertion đã pass.
 
-Annotated tag `v1.0.0` đã được tạo tại commit `4bbe002`. Tag hiện chưa bao gồm ảnh Desktop và các tài liệu bổ sung sau commit này.
+Annotated tag `v1.0.0` đánh dấu bản nộp gồm ảnh Desktop và [báo cáo Word](../Assignment1_Report.docx).
 
 Kiểm thử tự động đã pass toàn bộ. Báo cáo Newman đầy đủ và environment có token khi chạy được lưu trong `.runtime/` và không commit.

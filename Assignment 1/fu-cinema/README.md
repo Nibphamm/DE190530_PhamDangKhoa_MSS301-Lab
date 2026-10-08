@@ -104,7 +104,7 @@ Request 5.3 dùng phòng mẫu Room 02. Nếu lần chạy trước bị gián �
 
 Kết quả thực tế và các bước còn chờ thực hiện được ghi tại [TEST_RESULTS.md](TEST_RESULTS.md).
 
-Đã xác minh toàn bộ hệ thống với ba database Docker: **27 test JUnit**, **85 request / 236 assertion trong collection chính**, BR14 thực tế và các kiểm tra bổ sung đều pass. Chi tiết tại [verification-results.json](postman/verification-results.json). Postman Desktop Runner ngày 08/10/2026 cũng đạt **236 Passed, 0 Failed, 0 Errors**. Annotated tag `v1.0.0` đã được tạo tại commit `4bbe002`; tag này chưa bao gồm ảnh Desktop và tài liệu bổ sung sau đó.
+Đã xác minh toàn bộ hệ thống với ba database Docker: **27 test JUnit**, **85 request / 236 assertion trong collection chính**, BR14 thực tế và các kiểm tra bổ sung đều pass. Chi tiết tại [verification-results.json](postman/verification-results.json). Postman Desktop Runner ngày 08/10/2026 cũng đạt **236 Passed, 0 Failed, 0 Errors**. Báo cáo nộp bài: [Assignment1_Report.docx](../Assignment1_Report.docx). Annotated tag `v1.0.0` đánh dấu bản nộp gồm mã nguồn, ảnh Desktop, kết quả kiểm thử và báo cáo Word.
 
 Khi ba database đã sẵn sàng, chạy JUnit và kiểm tra ApplicationContext:
 
