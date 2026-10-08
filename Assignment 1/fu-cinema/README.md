@@ -94,13 +94,17 @@ Collection sinh email, tên thể loại/phòng mới khi chạy. Tài khoản m
 
 **BR14 / test 6.15:** Sau khi chạy collection chính, giữ environment đang có token và showtimeId, dừng Movie Service, chạy [FUCinema-BR14-Manual.postman_collection.json](postman/FUCinema-BR14-Manual.postman_collection.json). Kỳ vọng 503 với JSON lỗi. Khởi động lại Movie Service sau đó.
 
-**Ảnh Postman Desktop Runner:** đang chờ người dùng cung cấp để bổ sung vào README. Kết quả kiểm thử tự động không thay thế yêu cầu ảnh Desktop này.
+**Postman Desktop Runner — 08/10/2026:** một iteration, **236 assertion Passed, 0 Failed, 0 Errors**. Ảnh do sinh viên cung cấp sau khi chạy trực tiếp trên Desktop:
+
+![Postman Desktop Collection Runner: 236 Passed, 0 Failed, 0 Errors](postman/Result.png)
+
+Request 5.3 dùng phòng mẫu Room 02. Nếu lần chạy trước bị gián đoạn trước bước 5.9, suất chiếu thử nghiệm có thể còn SCHEDULED và gây 409 khi chạy lại cùng ngày/giờ. Kiểm tra và hủy đúng suất chiếu thử nghiệm cũ bằng tài khoản Admin trước khi chạy lại; không cần reset toàn bộ database.
 
 ## 5. Kiểm thử
 
 Kết quả thực tế và các bước còn chờ thực hiện được ghi tại [TEST_RESULTS.md](TEST_RESULTS.md).
 
-Đã xác minh toàn bộ hệ thống với ba database Docker: **27 test JUnit**, **85 request / 236 assertion trong collection chính**, BR14 thực tế và các kiểm tra bổ sung đều pass. Chi tiết tại [verification-results.json](postman/verification-results.json). Hiện còn chờ ảnh Postman Desktop Runner để hoàn tất tài liệu nộp bài và gắn tag `v1.0.0`.
+Đã xác minh toàn bộ hệ thống với ba database Docker: **27 test JUnit**, **85 request / 236 assertion trong collection chính**, BR14 thực tế và các kiểm tra bổ sung đều pass. Chi tiết tại [verification-results.json](postman/verification-results.json). Postman Desktop Runner ngày 08/10/2026 cũng đạt **236 Passed, 0 Failed, 0 Errors**. Annotated tag `v1.0.0` đã được tạo tại commit `4bbe002`; tag này chưa bao gồm ảnh Desktop và tài liệu bổ sung sau đó.
 
 Khi ba database đã sẵn sàng, chạy JUnit và kiểm tra ApplicationContext:
 

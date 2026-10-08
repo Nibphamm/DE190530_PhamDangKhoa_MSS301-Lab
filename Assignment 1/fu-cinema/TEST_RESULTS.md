@@ -31,9 +31,12 @@ Ba database đã chạy; SQL Server healthy và `sqlserver-init` Exited (0). B�
 
 Chi tiết các request, assertion và kiểm tra bổ sung: [verification-results.json](postman/verification-results.json). File này lưu kết quả đã rút gọn, không lưu access token.
 
-## Còn chờ để hoàn tất nộp bài
+## Bổ sung Postman Desktop — 08/10/2026
 
-- Chưa có ảnh Postman Desktop Collection Runner. Người dùng chọn tự chạy Desktop và cung cấp ảnh.
-- Chưa gắn tag nộp bài `v1.0.0`; sẽ thực hiện sau khi bổ sung ảnh Desktop vào README.
+Sinh viên cung cấp [ảnh Collection Runner](postman/Result.png) của lần chạy lúc 13:48:13: một iteration, **236 assertion Passed, 0 Failed, 0 Errors**, thời gian 9 giây 576 ms. Ảnh đã được chèn vào README.
 
-Kiểm thử tự động đã pass toàn bộ. Báo cáo Newman đầy đủ và environment có token khi chạy được lưu trong `.runtime/` và không commit. Ảnh Desktop còn thiếu được ghi riêng, không dùng kết quả Newman để thay thế.
+Lần chạy trước có 6 assertion thất bại bắt nguồn từ request 5.3 xung đột với suất chiếu thử nghiệm cũ còn SCHEDULED trong Room 02. Ảnh Desktop mới xác nhận toàn bộ assertion đã pass.
+
+Annotated tag `v1.0.0` đã được tạo tại commit `4bbe002`. Tag hiện chưa bao gồm ảnh Desktop và các tài liệu bổ sung sau commit này.
+
+Kiểm thử tự động đã pass toàn bộ. Báo cáo Newman đầy đủ và environment có token khi chạy được lưu trong `.runtime/` và không commit.
