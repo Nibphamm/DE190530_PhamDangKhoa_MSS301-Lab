@@ -2,6 +2,7 @@ package com.mss301.order.saga;
 
 import com.mss301.order.client.InventoryClient;
 import com.mss301.order.client.PaymentClient;
+import com.mss301.order.client.ShippingClient;
 import com.mss301.order.dto.CreateOrderRequest;
 import com.mss301.order.entity.*;
 import com.mss301.order.service.OrderService;
@@ -31,6 +32,10 @@ public class OrderSagaOrchestrator {
     private final OrderService orderService;
     private final InventoryClient inventoryClient;
     private final PaymentClient paymentClient;
+    private final ShippingClient shippingClient;
+
+    @Value("${saga.shipping.enabled:false}")
+    private boolean shippingEnabled;
 
     // Spring Framework 7: RetryTemplate có sẵn trong spring-core (không cần thư viện spring-retry).
     // maxRetries(2) = 1 lần chạy đầu + 2 lần thử lại = tối đa 3 lần, cách nhau 1 giây.
@@ -53,13 +58,13 @@ public class OrderSagaOrchestrator {
         orderService.updateSagaStatus(orderId, SagaStatus.EXECUTING);
 
         // Ngăn xếp các compensating action của những bước ĐÃ thành công
-        Deque<Runnable> compensations = new ArrayDeque<>();
+        Deque<Compensation> compensations = new ArrayDeque<>();
 
         try {
             // ===== Bước 2: giữ hàng (inventory-service / MongoDB) =====
             inventoryClient.reserve(orderId, req.productId(), req.quantity());
             orderService.log(orderId, "RESERVE_INVENTORY", "SUCCESS", "Đã giữ " + req.quantity() + " " + req.productId());
-            compensations.push(() -> inventoryClient.release(orderId));
+            compensations.push(new Compensation("RELEASE_INVENTORY", () -> inventoryClient.release(orderId)));
 
             if (paymentDelayMs > 0) {
                 log.warn("[DEMO] Chờ {} ms trước khi thanh toán order={}", paymentDelayMs, orderId);
@@ -69,7 +74,7 @@ public class OrderSagaOrchestrator {
             // ===== Bước 3: thanh toán (payment-service / SQL Server) =====
             paymentClient.pay(orderId, req.customerId(), req.amount());
             orderService.log(orderId, "PROCESS_PAYMENT", "SUCCESS", "Đã thu " + req.amount());
-            compensations.push(() -> paymentClient.refund(orderId));
+            compensations.push(new Compensation("REFUND_PAYMENT", () -> paymentClient.refund(orderId)));
 
             // ===== Bước cuối: xác nhận order =====
             orderService.confirmOrder(orderId);
@@ -86,11 +91,11 @@ public class OrderSagaOrchestrator {
     }
 
     // Chạy compensation theo thứ tự NGƯỢC (LIFO) rồi hủy order
-    private void compensate(Long orderId, Deque<Runnable> compensations) {
+    private void compensate(Long orderId, Deque<Compensation> compensations) {
         orderService.updateSagaStatus(orderId, SagaStatus.COMPENSATING);
         boolean allOk = true;
         while (!compensations.isEmpty()) {
-            Runnable action = compensations.pop();
+            Compensation action = compensations.pop();
             allOk &= runWithRetry(orderId, action);
         }
         if (!allOk) {
@@ -103,13 +108,13 @@ public class OrderSagaOrchestrator {
     }
 
     // Compensation phải "Reliable" -> thử lại tối đa 3 lần (Slide 25)
-    private boolean runWithRetry(Long orderId, Runnable action) {
+    private boolean runWithRetry(Long orderId, Compensation action) {
         AtomicInteger attempt = new AtomicInteger();
         try {
             compensationRetry.execute(() -> {
                 int n = attempt.incrementAndGet();
                 try {
-                    action.run();
+                    action.action().run();
                 } catch (RestClientException ex) {
                     orderService.log(orderId, "COMPENSATION", "FAILED", "Lần thử " + n + ": " + ex.getMessage());
                     throw ex;                       // ném lại để RetryTemplate thử lần tiếp theo
@@ -122,6 +127,8 @@ public class OrderSagaOrchestrator {
             return false;
         }
     }
+
+    private record Compensation(String name, Runnable action) { }
 
     private String extractReason(RestClientException ex) {
         if (ex instanceof RestClientResponseException r) {
