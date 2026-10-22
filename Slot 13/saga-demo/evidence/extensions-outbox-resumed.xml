@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="MSS301 - Saga Extensions" tests="3" time="0.055">
+  <testsuite name="EXT-5 - Resume after restart / Wait for async completion" id="a0434bc9-9a85-410e-962d-a14a0d52a3af" timestamp="2026-10-22T12:13:04.903Z" tests="3" failures="0" errors="0" time="0.013">
+    <testcase name="HTTP 200" time="0.013" classname="Ext5ResumeAfterRestartWaitForAsyncCompletion"/>
+    <testcase name="Async order CONFIRMED" time="0.013" classname="Ext5ResumeAfterRestartWaitForAsyncCompletion"/>
+    <testcase name="Async saga COMPLETED" time="0.013" classname="Ext5ResumeAfterRestartWaitForAsyncCompletion"/>
+  </testsuite>
+  <testsuite name="EXT-5 - Resume after restart / Purchase completed exactly once" id="104f36d3-de45-40de-9f9d-1f8b99382f50" timestamp="2026-10-22T12:13:04.903Z" tests="7" failures="0" errors="0" time="0.014">
+    <testcase name="HTTP 200" time="0.014" classname="Ext5ResumeAfterRestartPurchaseCompletedExactlyOnce"/>
+    <testcase name="Both products exist" time="0.014" classname="Ext5ResumeAfterRestartPurchaseCompletedExactlyOnce"/>
+    <testcase name="Stock delta P1" time="0.014" classname="Ext5ResumeAfterRestartPurchaseCompletedExactlyOnce"/>
+    <testcase name="Stock delta P2" time="0.014" classname="Ext5ResumeAfterRestartPurchaseCompletedExactlyOnce"/>
+    <testcase name="Wallet verification succeeds" time="0.014" classname="Ext5ResumeAfterRestartPurchaseCompletedExactlyOnce"/>
+    <testcase name="Balance delta C1" time="0.014" classname="Ext5ResumeAfterRestartPurchaseCompletedExactlyOnce"/>
+    <testcase name="Balance delta C2" time="0.014" classname="Ext5ResumeAfterRestartPurchaseCompletedExactlyOnce"/>
+  </testsuite>
+  <testsuite name="EXT-5 - Resume after restart / All commands delivered" id="6c1c8408-9c03-400b-980c-da3b855d44ed" timestamp="2026-10-22T12:13:04.903Z" tests="3" failures="0" errors="0" time="0.028">
+    <testcase name="HTTP 200" time="0.028" classname="Ext5ResumeAfterRestartAllCommandsDelivered"/>
+    <testcase name="RESERVE PAY CONFIRM delivered" time="0.028" classname="Ext5ResumeAfterRestartAllCommandsDelivered"/>
+    <testcase name="All commands DONE" time="0.028" classname="Ext5ResumeAfterRestartAllCommandsDelivered"/>
+  </testsuite>
+</testsuites>

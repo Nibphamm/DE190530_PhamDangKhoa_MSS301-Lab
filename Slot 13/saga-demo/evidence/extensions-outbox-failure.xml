@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="MSS301 - Saga Extensions" tests="5" time="0.124">
+  <testsuite name="EXT-5 - Outbox payment failure / Snapshot" id="8114a350-2d34-44a2-a87e-2a7e240365fe" timestamp="2026-10-22T12:13:06.441Z" tests="2" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="Ext5OutboxPaymentFailureSnapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.012" classname="Ext5OutboxPaymentFailureSnapshot"/>
+  </testsuite>
+  <testsuite name="EXT-5 - Outbox payment failure / Reject insufficient balance" id="6a653006-3c48-423e-8dd4-34ddf4633d22" timestamp="2026-10-22T12:13:06.441Z" tests="1" failures="0" errors="0" time="0.074">
+    <testcase name="HTTP 200" time="0.074" classname="Ext5OutboxPaymentFailureRejectInsufficientBalance"/>
+  </testsuite>
+  <testsuite name="EXT-5 - Outbox payment failure / Wait for async completion" id="6833c036-e17c-4cb7-ab30-0e3432416846" timestamp="2026-10-22T12:13:06.441Z" tests="3" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="Ext5OutboxPaymentFailureWaitForAsyncCompletion"/>
+    <testcase name="Async order CANCELLED" time="0.012" classname="Ext5OutboxPaymentFailureWaitForAsyncCompletion"/>
+    <testcase name="Async saga COMPENSATED" time="0.012" classname="Ext5OutboxPaymentFailureWaitForAsyncCompletion"/>
+  </testsuite>
+  <testsuite name="EXT-5 - Outbox payment failure / Compensation restores all resources" id="81ee90cd-ba93-4e9d-9d3b-397cadcd7cf8" timestamp="2026-10-22T12:13:06.441Z" tests="7" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="Ext5OutboxPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Both products exist" time="0.012" classname="Ext5OutboxPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Stock delta P1" time="0.012" classname="Ext5OutboxPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Stock delta P2" time="0.012" classname="Ext5OutboxPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Wallet verification succeeds" time="0.012" classname="Ext5OutboxPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Balance delta C1" time="0.012" classname="Ext5OutboxPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Balance delta C2" time="0.012" classname="Ext5OutboxPaymentFailureCompensationRestoresAllResources"/>
+  </testsuite>
+  <testsuite name="EXT-5 - Outbox payment failure / Inspect saga logs" id="b0067132-ce70-476f-8965-95817f818efb" timestamp="2026-10-22T12:13:06.441Z" tests="1" failures="0" errors="0" time="0.014">
+    <testcase name="HTTP 200" time="0.014" classname="Ext5OutboxPaymentFailureInspectSagaLogs"/>
+  </testsuite>
+</testsuites>

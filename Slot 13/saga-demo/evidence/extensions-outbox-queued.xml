@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="MSS301 - Saga Extensions" tests="3" time="0.182">
+  <testsuite name="EXT-5 - Queue before restart / Snapshot" id="f49ffb80-c44f-46c1-aaac-042b0cb94306" timestamp="2026-10-22T12:12:55.211Z" tests="2" failures="0" errors="0" time="0.021">
+    <testcase name="HTTP 200" time="0.021" classname="Ext5QueueBeforeRestartSnapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.021" classname="Ext5QueueBeforeRestartSnapshot"/>
+  </testsuite>
+  <testsuite name="EXT-5 - Queue before restart / Durably queue order" id="60cf70c3-a20a-4fe1-9667-bba218fceec6" timestamp="2026-10-22T12:12:55.211Z" tests="1" failures="0" errors="0" time="0.135">
+    <testcase name="HTTP 200" time="0.135" classname="Ext5QueueBeforeRestartDurablyQueueOrder"/>
+  </testsuite>
+  <testsuite name="EXT-5 - Queue before restart / Inspect durable RESERVE command" id="22a2d570-c117-479d-8716-382257d4a051" timestamp="2026-10-22T12:12:55.211Z" tests="3" failures="0" errors="0" time="0.026">
+    <testcase name="HTTP 200" time="0.026" classname="Ext5QueueBeforeRestartInspectDurableReserveCommand"/>
+    <testcase name="One queued command" time="0.026" classname="Ext5QueueBeforeRestartInspectDurableReserveCommand"/>
+    <testcase name="RESERVE persists pending" time="0.026" classname="Ext5QueueBeforeRestartInspectDurableReserveCommand"/>
+  </testsuite>
+</testsuites>

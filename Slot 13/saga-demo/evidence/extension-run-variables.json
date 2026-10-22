@@ -1,0 +1,2484 @@
+{
+  "item": [
+    {
+      "id": "91502fbd-382f-4955-bb58-33fe8b6d5f12",
+      "name": "EXT-4 - Recover KB8",
+      "description": {
+        "content": "Start recovery profile; set recoveryOrderId to the KB8 order before running.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "23d4a6d5-0458-4029-a66c-a474f9616246",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "94cfef0e-a9ee-4543-a98f-156cea8320f6",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "440549b2-cdc2-4057-97a9-8f71836e3089",
+          "name": "Recover KB8",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{recoveryOrderId}}",
+                "compensate"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "POST"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "ab13395a-d921-4566-98a4-309281f98d24",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.test(\"Recovered CANCELLED/COMPENSATED\", () => { pm.expect(o.status).to.eql(\"CANCELLED\"); pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "18a05124-3bc6-4efe-86a8-1e7d5deb6eb2",
+          "name": "Repeat recovery safely",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{recoveryOrderId}}",
+                "compensate"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "POST"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "078b6ec2-4b79-4b10-b1e1-b692610a0db7",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Already compensated\", () => pm.expect(pm.response.json().sagaStatus).to.eql(\"COMPENSATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "bf64bab2-7eee-4c5a-a48b-0c3be55930be",
+          "name": "Stock restored once; no debit",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "26c695d0-e3ba-45e0-b680-3fdb08319822",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {\"P2\": 1};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "8208f8b9-b03b-45bf-818a-93ceb4c92d17",
+          "name": "Recovery saga logs",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{recoveryOrderId}}",
+                "saga-logs"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "aa6a82ed-32c8-4b53-89a8-dac86e964735",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json(); pm.test(\"Three original failures retained\", () => pm.expect(logs.filter(l => l.step === \"COMPENSATION\" && l.result === \"FAILED\")).to.have.length(3)); pm.test(\"Recovery completed\", () => pm.expect(logs.at(-1).step).to.eql(\"CANCEL_ORDER\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "97dd386c-5bbb-40f3-a430-dcad40c8cb41",
+      "name": "EXT-1 - Shipping rejection",
+      "description": {
+        "content": "Start docker-compose.shipping.yml override.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "3f516692-b2c9-498e-8b16-443a5a8e3666",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "34d3f832-07e3-402c-9bb7-5f57ccfc4d41",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "43b60015-9303-4ea1-80bf-fe459dace7f4",
+          "name": "Shipping rejects four items",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 4, \"amount\": 80}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "0e4700b2-0d36-46e7-b779-4f550d7df363",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                  "pm.test(\"Order CANCELLED\", () => pm.expect(o.status).to.eql(\"CANCELLED\"));",
+                  "pm.test(\"Saga COMPENSATED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "011b54bd-ccd6-4b38-945b-8e65d9f70494",
+          "name": "Wallet and stock restored",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "dd8a8292-9433-4b16-b3d8-7679129c06d8",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "c5e28c9e-2a76-4d67-b7e7-c3d9cb1c0a14",
+          "name": "Inspect saga logs",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "saga-logs"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "fc01f27c-7cf9-4ce7-8e94-4f74967ef0f4",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();",
+                  "pm.test(\"Exact execution sequence\", () => pm.expect(logs.map(l => l.step)).to.eql([\"CREATE_ORDER\", \"RESERVE_INVENTORY\", \"PROCESS_PAYMENT\", \"SAGA\", \"COMPENSATION\", \"COMPENSATION\", \"CANCEL_ORDER\"]));",
+                  "pm.test(\"Compensation LIFO\", () => pm.expect(logs.filter(l => l.step === \"COMPENSATION\" && l.result === \"SUCCESS\").map(l => l.message.split(\" - \")[0])).to.eql([\"REFUND_PAYMENT\", \"RELEASE_INVENTORY\"]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "26306279-09da-4c99-b59f-68380e698e83",
+          "name": "Payment was refunded",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "payments"
+              ],
+              "host": [
+                "{{paymentUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "3177a8b3-adde-42b2-be9e-dc10f683f5f7",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const p = pm.response.json().find(p => p.orderId === Number(pm.collectionVariables.get(\"extensionOrderId\"))); pm.test(\"Payment REFUNDED\", () => pm.expect(p.status).to.eql(\"REFUNDED\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "91a06b16-09da-4471-95eb-057ce76007a4",
+      "name": "EXT-1 - Shipping success",
+      "item": [
+        {
+          "id": "8369de94-0116-43ac-a1f8-5d71c7ef1cb3",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "7e58eef1-9caa-485a-a113-332e191731fe",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "e4049bb3-efdd-4939-923b-a0b470c36314",
+          "name": "Create shipment",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "85891ca3-8f50-4070-8292-646e75bcd4ff",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                  "pm.test(\"Order CONFIRMED\", () => pm.expect(o.status).to.eql(\"CONFIRMED\"));",
+                  "pm.test(\"Saga COMPLETED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPLETED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "1494db5b-1adc-405c-9687-83db1885e7e3",
+          "name": "One item purchased",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "9f8a37b5-2464-4832-b65c-36711b556da5",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {\"P2\": -1};",
+                  "const balanceDelta = {\"C1\": -20};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "86609a8c-9395-4964-bbd4-19382970208a",
+          "name": "Inspect saga logs",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "saga-logs"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "fe72f0ca-0771-496f-acbb-175810ccfa68",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();",
+                  "pm.test(\"Exact execution sequence\", () => pm.expect(logs.map(l => l.step)).to.eql([\"CREATE_ORDER\", \"RESERVE_INVENTORY\", \"PROCESS_PAYMENT\", \"CREATE_SHIPPING\", \"CONFIRM_ORDER\"]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "d80445d3-e6fc-49b4-9333-392c817d3a27",
+          "name": "Inspect shipment",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "shipping"
+              ],
+              "host": [
+                "{{shippingUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "12af2beb-12bc-4a1d-9fc8-2195cd6be86b",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json().find(s => s.orderId === Number(pm.collectionVariables.get(\"extensionOrderId\"))); pm.test(\"Shipment CREATED\", () => pm.expect(s.status).to.eql(\"CREATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "535651df-67f7-4d3a-97fc-77d40b04b4ca",
+          "name": "Reject recovery of successful purchase",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "compensate"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "POST"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "7c073b7d-86a8-4bd9-a512-c7ae82e5964c",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "078082d6-9f21-476d-a8fc-b91db2cac1d8",
+      "name": "EXT-1 - Shipping idempotency",
+      "description": {
+        "content": "Requires shipping-service on 8084. Uses an isolated shipment id without changing inventory or wallets.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "68494a7d-64f0-4cfc-8fd9-e760920fddc8",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "5a3a6d74-659c-4856-970f-fe9b9f0f023f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ],
+                "_lastExecutionId": "256554a1-9e30-49f4-9b4c-6eb2fa2c33f3"
+              }
+            }
+          ]
+        },
+        {
+          "id": "286dcea5-c928-4e38-ae63-0764f49441ac",
+          "name": "Create isolated shipment",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "shipping",
+                "create"
+              ],
+              "host": [
+                "{{shippingUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"orderId\": \"{{isolatedShipmentId}}\", \"productId\": \"P2\", \"quantity\": 1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "a9acb46c-8966-4601-a8cb-11aa26834ee8",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"isolatedShipmentId\", Date.now());"
+                ],
+                "_lastExecutionId": "effea316-e6bd-4afc-a154-e79a9e936204"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "d2ee4492-2450-45ae-99c9-d612f832451e",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"CREATED\", () => pm.expect(pm.response.json().status).to.eql(\"CREATED\"));"
+                ],
+                "_lastExecutionId": "74bb0c39-e6de-4076-bcaf-d7a31b00bb3e"
+              }
+            }
+          ]
+        },
+        {
+          "id": "0460224c-7938-4077-b67e-9a81c3be4d5e",
+          "name": "Repeat create",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "shipping",
+                "create"
+              ],
+              "host": [
+                "{{shippingUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"orderId\": \"{{isolatedShipmentId}}\", \"productId\": \"P2\", \"quantity\": 1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "4d10491b-82d5-483a-a406-9af16ce09b53",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Still CREATED\", () => pm.expect(pm.response.json().status).to.eql(\"CREATED\"));"
+                ],
+                "_lastExecutionId": "5211e355-d67b-4cde-98ca-5fd6804ef5ff"
+              }
+            }
+          ]
+        },
+        {
+          "id": "2893627b-c421-4006-bd12-28ee45417df6",
+          "name": "Cancel shipment",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "shipping",
+                "cancel",
+                "{{isolatedShipmentId}}"
+              ],
+              "host": [
+                "{{shippingUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "POST"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2e948d03-f5ff-401b-ada9-1c18370e1f74",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ],
+                "_lastExecutionId": "f8996044-b52a-4f88-98de-110ae14b4b06"
+              }
+            }
+          ]
+        },
+        {
+          "id": "7cd80082-2c0c-43a9-acdb-dad5bb1c163d",
+          "name": "Repeat cancellation",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "shipping",
+                "cancel",
+                "{{isolatedShipmentId}}"
+              ],
+              "host": [
+                "{{shippingUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "POST"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b383bb95-46e9-4773-b61c-2d3c1411fe18",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ],
+                "_lastExecutionId": "e57b9c26-4973-44b4-926c-8ae183811b17"
+              }
+            }
+          ]
+        },
+        {
+          "id": "0245fcf9-a883-48ff-8bd6-201ef44a888d",
+          "name": "One cancelled shipment",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "shipping"
+              ],
+              "host": [
+                "{{shippingUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "3468299a-7f4c-46fc-9c18-e0e24cdea148",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const rows = pm.response.json().filter(s => s.orderId === Number(pm.collectionVariables.get(\"isolatedShipmentId\"))); pm.test(\"One CANCELLED receipt\", () => { pm.expect(rows).to.have.length(1); pm.expect(rows[0].status).to.eql(\"CANCELLED\"); });"
+                ],
+                "_lastExecutionId": "1a76d603-24e6-4c66-bbe5-838ec7ba1a14"
+              }
+            }
+          ]
+        },
+        {
+          "id": "07addaff-c496-4cbd-a7a4-d77c173e3135",
+          "name": "No other resources changed",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "fa1b958e-859d-4dd1-8d46-1123cdb9275e",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ],
+                "_lastExecutionId": "98c0a9de-ed2c-4fdc-9bcb-acae81c22958"
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "83c7bca9-dc2a-4c4a-b43e-5c0d8c0445fb",
+      "name": "EXT-2 - Timeout after commit",
+      "description": {
+        "content": "Start timeout override. Payment delays its HTTP response for 5s after committing, client times out at 2s.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "ce3cfb4a-cd5a-4c40-91dc-3d270d5136fe",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d25a5762-847e-42f1-9de8-408068fce6ad",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "bc7845b1-ce80-4106-9924-9f30a2103bfa",
+          "name": "Lose payment acknowledgement",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "bdd7cc1d-d20b-4c44-a671-acd74ae2fa93",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                  "pm.test(\"Order CANCELLED\", () => pm.expect(o.status).to.eql(\"CANCELLED\"));",
+                  "pm.test(\"Saga COMPENSATED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b9c56962-8ea0-40b3-b1c4-3e80293b8420",
+          "name": "No money or stock lost",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a33f20e4-ab7c-4c1c-bece-c37e17cfaee2",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "7301a791-9537-4d92-8b86-3116818a0f84",
+          "name": "Inspect saga logs",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "saga-logs"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "57bc85a6-eb6b-4a3d-b7c8-93be7f80f7b6",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();",
+                  "pm.test(\"Compensation LIFO\", () => pm.expect(logs.filter(l => l.step === \"COMPENSATION\" && l.result === \"SUCCESS\").map(l => l.message.split(\" - \")[0])).to.eql([\"REFUND_PAYMENT\", \"RELEASE_INVENTORY\"]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "5def62e1-9471-4f50-acba-f0114dcb6713",
+          "name": "Payment receipt shows refund",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "payments"
+              ],
+              "host": [
+                "{{paymentUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "fb53c602-c344-43a9-b6f6-37cc9afa3414",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const p = pm.response.json().find(p => p.orderId === Number(pm.collectionVariables.get(\"extensionOrderId\"))); pm.test(\"Committed payment REFUNDED\", () => pm.expect(p.status).to.eql(\"REFUNDED\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "1e67feab-79c5-4038-acfe-ce9717ef0b25",
+      "name": "EXT-5 - Outbox success",
+      "item": [
+        {
+          "id": "039e222a-abec-4e63-ab8d-50780a900030",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d96a4920-8625-4ba1-882f-44b0e4066ee1",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "6236a44e-15c9-4790-bd46-0946b46a837c",
+          "name": "Submit async order",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e96d4354-e336-464c-b15f-aabd41455987",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "aa42f61b-0b6a-4683-b12c-a78d3cf31ee6",
+          "name": "Wait for async completion",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d8fe1c4b-145a-46cc-ba3a-2cbd15145a12",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                  "function check(remaining) {",
+                  "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                  "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                  "    const order = response.json().find(o => o.id === id);",
+                  "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                  "      pm.test(\"Async order CONFIRMED\", () => pm.expect(order.status).to.eql(\"CONFIRMED\"));",
+                  "      pm.test(\"Async saga COMPLETED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPLETED\"));",
+                  "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                  "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                  "  });",
+                  "}",
+                  "check(100);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "1e63c198-65a2-48d2-85b9-5f8f0d280832",
+          "name": "Purchase applied once",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "4808b587-3875-421c-8a32-108144fe47cd",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {\"P2\": -1};",
+                  "const balanceDelta = {\"C1\": -20};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "11ae0a7b-5967-4785-a058-6d403d10e57e",
+          "name": "Inspect saga logs",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "saga-logs"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "fe9591d2-46ca-4406-975f-66d4f5601df3",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "f9eee653-1416-468c-8121-c8fc1c1958f8",
+      "name": "EXT-5 - Outbox payment failure",
+      "item": [
+        {
+          "id": "37869c10-5853-4623-8459-0968b2deb73e",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2e294829-b2a2-49a9-a428-1332fb00425f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "3e9ae020-99e1-4332-ab6f-f680c4c7c42e",
+          "name": "Reject insufficient balance",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C2\", \"productId\": \"P1\", \"quantity\": 1, \"amount\": 1000}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "6e4e442a-295d-42fb-a421-92033a0e9c71",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "ddb3981c-5732-46cc-8ae7-907da9448334",
+          "name": "Wait for async completion",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "3ae4c455-e216-4646-9dbf-127ae483b294",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                  "function check(remaining) {",
+                  "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                  "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                  "    const order = response.json().find(o => o.id === id);",
+                  "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                  "      pm.test(\"Async order CANCELLED\", () => pm.expect(order.status).to.eql(\"CANCELLED\"));",
+                  "      pm.test(\"Async saga COMPENSATED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPENSATED\"));",
+                  "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                  "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                  "  });",
+                  "}",
+                  "check(100);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "6e51dfb7-cf41-4e02-acf3-d5fe59705d33",
+          "name": "Compensation restores all resources",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a6022f94-2029-4267-9d1e-097cdf9fb2ba",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "7b28e07d-e172-404b-a7bb-262270f19e0e",
+          "name": "Inspect saga logs",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "saga-logs"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "74cfc29f-3dba-4be8-b699-e301708a98bb",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "9645b157-3908-49b2-88a0-0acbb098d2eb",
+      "name": "EXT-3 - Choreography success",
+      "item": [
+        {
+          "id": "d316263f-f1f5-4f2f-ac57-aac7deadd2d4",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "ed945fd1-dba6-4389-826e-2c3d3833238a",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "abc8fd38-c49d-41bc-8bb0-4cb43eb27572",
+          "name": "Submit async order",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "349b7df0-98df-4e4b-a4b0-58167e3c280e",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "f30470e1-9445-4b47-bec6-cba8378305fe",
+          "name": "Wait for async completion",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "68d203ff-9be0-4db9-8cdd-95de30ed91a4",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                  "function check(remaining) {",
+                  "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                  "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                  "    const order = response.json().find(o => o.id === id);",
+                  "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                  "      pm.test(\"Async order CONFIRMED\", () => pm.expect(order.status).to.eql(\"CONFIRMED\"));",
+                  "      pm.test(\"Async saga COMPLETED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPLETED\"));",
+                  "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                  "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                  "  });",
+                  "}",
+                  "check(100);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "53fd2946-f738-49d8-b5f3-135e63f4913a",
+          "name": "Purchase applied once",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "dc76406c-6294-4877-b7dd-04292c5cbaaa",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {\"P2\": -1};",
+                  "const balanceDelta = {\"C1\": -20};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "87639a50-cc3f-4cde-bef0-deb484ff3fd7",
+          "name": "Inspect saga logs",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "saga-logs"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "0ea1a456-5ce0-4393-84a8-d5c558c82a5c",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "9a5834ad-0490-45e6-beaa-9cce2b7317ba",
+      "name": "EXT-3 - Choreography payment failure",
+      "item": [
+        {
+          "id": "fc5822e3-0601-4793-8d0f-a99b74e5eaea",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "661b8687-72a2-4b72-9caf-2306ee746f75",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "afa78c14-b2cb-43b5-ad2c-5cbb5a04cf13",
+          "name": "Reject insufficient balance",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C2\", \"productId\": \"P1\", \"quantity\": 1, \"amount\": 1000}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "411ab1cd-b908-45cb-8f01-4001395bdd81",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "7b2029c3-d088-4629-a072-53919cf74549",
+          "name": "Wait for async completion",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "03fe0692-c79d-4c52-8b28-369db9e2f6f9",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                  "function check(remaining) {",
+                  "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                  "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                  "    const order = response.json().find(o => o.id === id);",
+                  "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                  "      pm.test(\"Async order CANCELLED\", () => pm.expect(order.status).to.eql(\"CANCELLED\"));",
+                  "      pm.test(\"Async saga COMPENSATED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPENSATED\"));",
+                  "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                  "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                  "  });",
+                  "}",
+                  "check(100);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "bfbd0e68-95a2-45ea-955e-108af5b2fd2c",
+          "name": "Compensation restores all resources",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "06c14435-e91b-4338-a8a9-a16c4f578f37",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "ff7a07bd-70ef-434d-b25d-99bd82dd112f",
+          "name": "Inspect saga logs",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "saga-logs"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "611e5044-dced-4d25-b8be-01d23a4de20d",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "dee149bf-d8d8-467c-a1cf-ec75d7b03355",
+      "name": "EXT-5 - Queue before restart",
+      "item": [
+        {
+          "id": "7160b085-27d8-4cc9-9cf6-301ccf96d904",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "bb7d9fd9-be3a-4df9-befe-41e824031fd1",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "34ae7e64-35ec-42c9-b5e5-616fdd2aff68",
+          "name": "Durably queue order",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d216fbb2-2571-4620-abb0-fb63872856ce",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "138ee42f-9665-467c-8c4f-3c98da9d4b22",
+          "name": "Inspect durable RESERVE command",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "outbox"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "78c8fb20-f771-455a-8c52-55802df370b5",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const c = pm.response.json(); pm.test(\"One queued command\", () => pm.expect(c).to.have.length(1)); pm.test(\"RESERVE persists pending\", () => { pm.expect(c[0].command).to.eql(\"RESERVE\"); pm.expect(c[0].state).to.eql(\"PENDING\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "a299d64d-7dfe-4158-b278-c7d47ab68f85",
+      "name": "EXT-5 - Resume after restart",
+      "item": [
+        {
+          "id": "ae298381-73f2-4f11-a8d1-12665ed64cea",
+          "name": "Wait for async completion",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "4d2f45bd-ae9c-4588-a97c-1cb5bd473a22",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                  "function check(remaining) {",
+                  "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                  "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                  "    const order = response.json().find(o => o.id === id);",
+                  "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                  "      pm.test(\"Async order CONFIRMED\", () => pm.expect(order.status).to.eql(\"CONFIRMED\"));",
+                  "      pm.test(\"Async saga COMPLETED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPLETED\"));",
+                  "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                  "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                  "  });",
+                  "}",
+                  "check(100);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "98d3ea75-c4b6-47a7-b2ab-4238c30711a5",
+          "name": "Purchase completed exactly once",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "7465c9f3-eb99-4519-9caf-d293d5c9db77",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {\"P2\": -1};",
+                  "const balanceDelta = {\"C1\": -20};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "155c3b2d-ba1e-473b-af86-8b3fa562298a",
+          "name": "All commands delivered",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "outbox"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "0b615527-9dbd-446a-8247-bb657c5b10e3",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const c = pm.response.json(); pm.test(\"RESERVE PAY CONFIRM delivered\", () => pm.expect(c.map(c => c.command)).to.eql([\"RESERVE\", \"PAY\", \"CONFIRM\"])); pm.test(\"All commands DONE\", () => c.forEach(c => pm.expect(c.state).to.eql(\"DONE\")));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "0112dc5c-0b77-4397-97b5-c45048d28a04",
+      "name": "EXT-6 - HTTP interfaces",
+      "item": [
+        {
+          "id": "4478e506-df5b-4295-9edb-2d1ec5fd6a17",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "cf372936-b6e4-47e5-85ea-ac744a51e111",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "3cbd2e85-a9d3-4085-800f-460bef01d0ac",
+          "name": "Interface payment rejection",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C2\", \"productId\": \"P1\", \"quantity\": 1, \"amount\": 1000}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "8798f7a1-2d58-42cd-8ed2-784c7936bbe9",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                  "pm.test(\"Order CANCELLED\", () => pm.expect(o.status).to.eql(\"CANCELLED\"));",
+                  "pm.test(\"Saga COMPENSATED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "8d621992-0015-4b8b-b6d8-05af2a5b4205",
+          "name": "Proxy compensation works",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2cfb2776-9b15-48ba-bcbd-58bdf378f71e",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "3b677714-6924-4f4f-b4c4-a00371a4538e",
+          "name": "Inspect saga logs",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "saga-logs"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "cdbcefea-d1b2-4fc0-942c-bc077cf87251",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();",
+                  "pm.test(\"Exact execution sequence\", () => pm.expect(logs.map(l => l.step)).to.eql([\"CREATE_ORDER\", \"RESERVE_INVENTORY\", \"SAGA\", \"COMPENSATION\", \"CANCEL_ORDER\"]));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "any",
+      "value": "http://localhost:8081",
+      "key": "orderUrl"
+    },
+    {
+      "type": "any",
+      "value": "http://localhost:8082",
+      "key": "inventoryUrl"
+    },
+    {
+      "type": "any",
+      "value": "http://localhost:8083",
+      "key": "paymentUrl"
+    },
+    {
+      "type": "any",
+      "value": "http://localhost:8084",
+      "key": "shippingUrl"
+    },
+    {
+      "type": "any",
+      "value": "7",
+      "key": "recoveryOrderId"
+    },
+    {
+      "type": "any",
+      "value": 8,
+      "key": "stock_P1"
+    },
+    {
+      "type": "any",
+      "value": 0,
+      "key": "stock_P2"
+    },
+    {
+      "type": "any",
+      "value": 2900,
+      "key": "bal_C1"
+    },
+    {
+      "type": "any",
+      "value": 100,
+      "key": "bal_C2"
+    },
+    {
+      "type": "any",
+      "value": 18,
+      "key": "extensionOrderId"
+    },
+    {
+      "type": "any",
+      "value": 1792671637654,
+      "key": "isolatedShipmentId"
+    }
+  ],
+  "info": {
+    "_postman_id": "beeb62c4-b85a-44be-9ebf-0389dd6450e6",
+    "name": "MSS301 - Saga Extensions",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Run one folder with its matching Compose override. scripts/run-extensions.cjs switches profiles and executes the complete suite. Do not run the entire collection against one profile.",
+      "type": "text/plain"
+    }
+  }
+}

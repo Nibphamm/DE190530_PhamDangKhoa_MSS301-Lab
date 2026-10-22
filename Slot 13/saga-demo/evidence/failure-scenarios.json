@@ -1,0 +1,160 @@
+{
+  "KB6": {
+    "order": {
+      "amount": 20.0,
+      "customerId": "C1",
+      "failureReason": "Service không phản hồi: I/O error on POST request for \"http://payment-service:8083/api/payments/pay\": null",
+      "id": 6,
+      "productId": "P2",
+      "quantity": 1,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    "logs": [
+      {
+        "orderId": 6,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 21,
+        "time": "2026-10-22T11:49:03.902358"
+      },
+      {
+        "orderId": 6,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 1 P2",
+        "id": 22,
+        "time": "2026-10-22T11:49:03.948486"
+      },
+      {
+        "orderId": 6,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "Service không phản hồi: I/O error on POST request for \"http://payment-service:8083/api/payments/pay\": null",
+        "id": 23,
+        "time": "2026-10-22T11:49:07.929035"
+      },
+      {
+        "orderId": 6,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "Lần thử 1",
+        "id": 24,
+        "time": "2026-10-22T11:49:07.970172"
+      },
+      {
+        "orderId": 6,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPENSATED",
+        "id": 25,
+        "time": "2026-10-22T11:49:07.984985"
+      }
+    ],
+    "before": {
+      "stock": {
+        "P1": 8,
+        "P2": 5
+      },
+      "wallets": {
+        "C1": 3000.0,
+        "C2": 100.0
+      }
+    },
+    "after": {
+      "stock": {
+        "P1": 8,
+        "P2": 5
+      },
+      "wallets": {
+        "C1": 3000.0,
+        "C2": 100.0
+      }
+    },
+    "passed": true
+  },
+  "KB8": {
+    "order": {
+      "amount": 20.0,
+      "customerId": "C1",
+      "failureReason": "Service không phản hồi: I/O error on POST request for \"http://payment-service:8083/api/payments/pay\": null",
+      "id": 7,
+      "productId": "P2",
+      "quantity": 1,
+      "sagaStatus": "COMPENSATING",
+      "status": "PENDING"
+    },
+    "logs": [
+      {
+        "orderId": 7,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 26,
+        "time": "2026-10-22T11:49:22.527344"
+      },
+      {
+        "orderId": 7,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 1 P2",
+        "id": 27,
+        "time": "2026-10-22T11:49:22.750169"
+      },
+      {
+        "orderId": 7,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "Service không phản hồi: I/O error on POST request for \"http://payment-service:8083/api/payments/pay\": null",
+        "id": 28,
+        "time": "2026-10-22T11:49:41.752821"
+      },
+      {
+        "orderId": 7,
+        "step": "COMPENSATION",
+        "result": "FAILED",
+        "message": "Lần thử 1: I/O error on POST request for \"http://inventory-service:8082/api/inventory/release/7\": HTTP connect timed out",
+        "id": 29,
+        "time": "2026-10-22T11:49:43.793545"
+      },
+      {
+        "orderId": 7,
+        "step": "COMPENSATION",
+        "result": "FAILED",
+        "message": "Lần thử 2: I/O error on POST request for \"http://inventory-service:8082/api/inventory/release/7\": HTTP connect timed out",
+        "id": 30,
+        "time": "2026-10-22T11:49:46.810128"
+      },
+      {
+        "orderId": 7,
+        "step": "COMPENSATION",
+        "result": "FAILED",
+        "message": "Lần thử 3: I/O error on POST request for \"http://inventory-service:8082/api/inventory/release/7\": HTTP connect timed out",
+        "id": 31,
+        "time": "2026-10-22T11:49:49.826522"
+      }
+    ],
+    "before": {
+      "stock": {
+        "P1": 8,
+        "P2": 5
+      },
+      "wallets": {
+        "C1": 3000.0,
+        "C2": 100.0
+      }
+    },
+    "after": {
+      "stock": {
+        "P1": 8,
+        "P2": 4
+      },
+      "wallets": {
+        "C1": 3000.0,
+        "C2": 100.0
+      }
+    },
+    "passed": true
+  }
+}

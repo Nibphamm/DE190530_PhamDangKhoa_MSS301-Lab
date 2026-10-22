@@ -1,0 +1,212 @@
+[
+  {
+    "Command": "\"java -jar /app/app.\u2026\"",
+    "CreatedAt": "2026-10-22 19:18:32 +0700 +07",
+    "ExitCode": 0,
+    "Health": "",
+    "ID": "6949b860444c",
+    "Image": "saga-demo-inventory-service",
+    "Labels": "com.docker.compose.depends_on=mongodb:service_healthy:false,com.docker.compose.image=sha256:f0325683840dd937b657d6f0bcbc106b86b632a0a01a03192f8ade0c1eb0f069,com.docker.compose.project.working_dir=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo,com.docker.compose.version=5.1.4,desktop.docker.io/ports/8082/tcp=:8082,org.opencontainers.image.title=ubuntu,com.docker.compose.oneoff=False,com.docker.compose.project=saga-demo,org.opencontainers.image.created=2026-10-06T21:25:30.040262+00:00,org.opencontainers.image.version=26.04,com.docker.compose.replace=inventory-service,desktop.docker.io/ports.scheme=v2,org.opencontainers.image.description=The Ubuntu container image maintained by Canonical\n\nUbuntu is a Debian-based Linux operating system that runs from the desktop to the cloud, to all your internet connected things.\nIt is the world's most popular operating system across public clouds and OpenStack clouds.\nIt is the number one platform for containers; from Docker to Kubernetes to LXD, Ubuntu can run your containers at scale.\nFast, secure and simple, Ubuntu powers millions of PCs worldwide.\n,com.docker.compose.config-hash=4d252864c0a62af6eb8e9d91cfc7aa37c77caa010a270814eac647b2800df044,com.docker.compose.container-number=1,com.docker.compose.project.config_files=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo\\docker-compose.yml,com.docker.compose.service=inventory-service",
+    "LocalVolumes": "0",
+    "Mounts": "",
+    "Name": "inventory-service",
+    "Names": "inventory-service",
+    "Networks": "saga-demo_default",
+    "Ports": "0.0.0.0:8082->8082/tcp, [::]:8082->8082/tcp",
+    "Project": "saga-demo",
+    "Publishers": [
+      {
+        "URL": "0.0.0.0",
+        "TargetPort": 8082,
+        "PublishedPort": 8082,
+        "Protocol": "tcp"
+      },
+      {
+        "URL": "::",
+        "TargetPort": 8082,
+        "PublishedPort": 8082,
+        "Protocol": "tcp"
+      }
+    ],
+    "RunningFor": "4 minutes ago",
+    "Service": "inventory-service",
+    "Size": "0B",
+    "State": "running",
+    "Status": "Up 4 minutes"
+  },
+  {
+    "Command": "\"java -jar /app/app.\u2026\"",
+    "CreatedAt": "2026-10-22 19:18:33 +0700 +07",
+    "ExitCode": 0,
+    "Health": "",
+    "ID": "2e0dae44e437",
+    "Image": "saga-demo-order-service",
+    "Labels": "com.docker.compose.oneoff=False,desktop.docker.io/ports.scheme=v2,desktop.docker.io/ports/8081/tcp=:8081,org.opencontainers.image.description=The Ubuntu container image maintained by Canonical\n\nUbuntu is a Debian-based Linux operating system that runs from the desktop to the cloud, to all your internet connected things.\nIt is the world's most popular operating system across public clouds and OpenStack clouds.\nIt is the number one platform for containers; from Docker to Kubernetes to LXD, Ubuntu can run your containers at scale.\nFast, secure and simple, Ubuntu powers millions of PCs worldwide.\n,org.opencontainers.image.version=26.04,com.docker.compose.container-number=1,com.docker.compose.project.config_files=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo\\docker-compose.yml,com.docker.compose.replace=order-service,com.docker.compose.service=order-service,com.docker.compose.depends_on=mysql:service_healthy:false,inventory-service:service_started:false,payment-service:service_started:false,com.docker.compose.image=sha256:4afccae3dadbb4e45a66a33f88c004e5534d2cdb5ec98917557e92de8d1fdf6f,com.docker.compose.project=saga-demo,com.docker.compose.project.working_dir=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo,org.opencontainers.image.title=ubuntu,com.docker.compose.config-hash=dde71ab6b2e25241d4e5f8457715ac6b65d406691793f63eb891a1df1afa8ff4,com.docker.compose.version=5.1.4,org.opencontainers.image.created=2026-10-06T21:25:30.040262+00:00",
+    "LocalVolumes": "0",
+    "Mounts": "",
+    "Name": "order-service",
+    "Names": "order-service",
+    "Networks": "saga-demo_default",
+    "Ports": "0.0.0.0:8081->8081/tcp, [::]:8081->8081/tcp",
+    "Project": "saga-demo",
+    "Publishers": [
+      {
+        "URL": "0.0.0.0",
+        "TargetPort": 8081,
+        "PublishedPort": 8081,
+        "Protocol": "tcp"
+      },
+      {
+        "URL": "::",
+        "TargetPort": 8081,
+        "PublishedPort": 8081,
+        "Protocol": "tcp"
+      }
+    ],
+    "RunningFor": "4 minutes ago",
+    "Service": "order-service",
+    "Size": "0B",
+    "State": "running",
+    "Status": "Up 4 minutes"
+  },
+  {
+    "Command": "\"java -jar /app/app.\u2026\"",
+    "CreatedAt": "2026-10-22 19:18:32 +0700 +07",
+    "ExitCode": 0,
+    "Health": "",
+    "ID": "013155ba95c2",
+    "Image": "saga-demo-payment-service",
+    "Labels": "org.opencontainers.image.title=ubuntu,com.docker.compose.config-hash=9392afc3a337b503be8868952967f9cccb2ac157ed70993e76d6dddbdcfc5145,org.opencontainers.image.created=2026-10-06T21:25:30.040262+00:00,com.docker.compose.version=5.1.4,desktop.docker.io/ports.scheme=v2,desktop.docker.io/ports/8083/tcp=:8083,com.docker.compose.depends_on=sqlserver:service_healthy:false,com.docker.compose.oneoff=False,com.docker.compose.project=saga-demo,org.opencontainers.image.description=The Ubuntu container image maintained by Canonical\n\nUbuntu is a Debian-based Linux operating system that runs from the desktop to the cloud, to all your internet connected things.\nIt is the world's most popular operating system across public clouds and OpenStack clouds.\nIt is the number one platform for containers; from Docker to Kubernetes to LXD, Ubuntu can run your containers at scale.\nFast, secure and simple, Ubuntu powers millions of PCs worldwide.\n,org.opencontainers.image.version=26.04,com.docker.compose.service=payment-service,com.docker.compose.container-number=1,com.docker.compose.image=sha256:b103d7c1936fd74c81a0522fed68f159a8a3358978c1bd89c773d7d8c01626b1,com.docker.compose.project.config_files=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo\\docker-compose.yml,com.docker.compose.project.working_dir=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo,com.docker.compose.replace=payment-service",
+    "LocalVolumes": "0",
+    "Mounts": "",
+    "Name": "payment-service",
+    "Names": "payment-service",
+    "Networks": "saga-demo_default",
+    "Ports": "0.0.0.0:8083->8083/tcp, [::]:8083->8083/tcp",
+    "Project": "saga-demo",
+    "Publishers": [
+      {
+        "URL": "0.0.0.0",
+        "TargetPort": 8083,
+        "PublishedPort": 8083,
+        "Protocol": "tcp"
+      },
+      {
+        "URL": "::",
+        "TargetPort": 8083,
+        "PublishedPort": 8083,
+        "Protocol": "tcp"
+      }
+    ],
+    "RunningFor": "4 minutes ago",
+    "Service": "payment-service",
+    "Size": "0B",
+    "State": "running",
+    "Status": "Up 4 minutes"
+  },
+  {
+    "Command": "\"docker-entrypoint.s\u2026\"",
+    "CreatedAt": "2026-10-22 18:42:40 +0700 +07",
+    "ExitCode": 0,
+    "Health": "healthy",
+    "ID": "e35a0a80c283",
+    "Image": "mongo:8.0",
+    "Labels": "com.docker.compose.version=5.1.4,desktop.docker.io/ports/27017/tcp=:27017,com.docker.compose.container-number=1,com.docker.compose.image=sha256:4a4ab5d4834207389e0d7270fac988e21ffedccecba77991a552f755df229907,com.docker.compose.oneoff=False,com.docker.compose.project.working_dir=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo,desktop.docker.io/ports.scheme=v2,org.opencontainers.image.version=24.04,com.docker.compose.config-hash=5b2d35a954aa0ace19a37dd851a5a8e62c670069a4a45dfa3073e545969197d1,com.docker.compose.depends_on=,com.docker.compose.project=saga-demo,com.docker.compose.project.config_files=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo\\docker-compose.yml,com.docker.compose.service=mongodb",
+    "LocalVolumes": "2",
+    "Mounts": "d99d0289f83181\u2026,saga-demo_mong\u2026",
+    "Name": "saga-mongodb",
+    "Names": "saga-mongodb",
+    "Networks": "saga-demo_default",
+    "Ports": "0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp",
+    "Project": "saga-demo",
+    "Publishers": [
+      {
+        "URL": "0.0.0.0",
+        "TargetPort": 27017,
+        "PublishedPort": 27017,
+        "Protocol": "tcp"
+      },
+      {
+        "URL": "::",
+        "TargetPort": 27017,
+        "PublishedPort": 27017,
+        "Protocol": "tcp"
+      }
+    ],
+    "RunningFor": "40 minutes ago",
+    "Service": "mongodb",
+    "Size": "0B",
+    "State": "running",
+    "Status": "Up 40 minutes (healthy)"
+  },
+  {
+    "Command": "\"docker-entrypoint.s\u2026\"",
+    "CreatedAt": "2026-10-22 18:46:07 +0700 +07",
+    "ExitCode": 0,
+    "Health": "healthy",
+    "ID": "43660a19dfc3",
+    "Image": "mysql:8.4",
+    "Labels": "com.docker.compose.config-hash=196117975027fcd2a0a7483b36dbe8882febc112288ef687d3d84e694a8e31e7,com.docker.compose.image=sha256:76f0358884cb92d9a086d24e5671c38048d3fef40f2588703d73eb55392d6b69,com.docker.compose.project=saga-demo,com.docker.compose.project.working_dir=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo,desktop.docker.io/ports/3306/tcp=:3308,com.docker.compose.container-number=1,com.docker.compose.depends_on=,com.docker.compose.oneoff=False,com.docker.compose.project.config_files=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo\\docker-compose.yml,com.docker.compose.service=mysql,com.docker.compose.version=5.1.4,desktop.docker.io/ports.scheme=v2",
+    "LocalVolumes": "1",
+    "Mounts": "saga-demo_mysq\u2026",
+    "Name": "saga-mysql",
+    "Names": "saga-mysql",
+    "Networks": "saga-demo_default",
+    "Ports": "0.0.0.0:3308->3306/tcp, [::]:3308->3306/tcp",
+    "Project": "saga-demo",
+    "Publishers": [
+      {
+        "URL": "0.0.0.0",
+        "TargetPort": 3306,
+        "PublishedPort": 3308,
+        "Protocol": "tcp"
+      },
+      {
+        "URL": "::",
+        "TargetPort": 3306,
+        "PublishedPort": 3308,
+        "Protocol": "tcp"
+      }
+    ],
+    "RunningFor": "36 minutes ago",
+    "Service": "mysql",
+    "Size": "0B",
+    "State": "running",
+    "Status": "Up 36 minutes (healthy)"
+  },
+  {
+    "Command": "\"/opt/mssql/bin/laun\u2026\"",
+    "CreatedAt": "2026-10-22 18:42:40 +0700 +07",
+    "ExitCode": 0,
+    "Health": "healthy",
+    "ID": "26a52ee19a77",
+    "Image": "mcr.microsoft.com/mssql/server:2022-latest",
+    "Labels": "com.docker.compose.container-number=1,com.docker.compose.depends_on=,com.docker.compose.project=saga-demo,com.docker.compose.version=5.1.4,com.microsoft.product=Microsoft SQL Server,com.microsoft.version=16.0.4305.5,desktop.docker.io/ports/1433/tcp=:14330,com.docker.compose.config-hash=740e840767403b2c461dc20d60fc5f42722c3158466a3ce37d7e8504e119a91c,com.docker.compose.oneoff=False,org.opencontainers.image.ref.name=ubuntu,org.opencontainers.image.version=22.04,com.docker.compose.image=sha256:cf8f0ab2ebe61feec2eed2629061a07d247f791c2a8ddda74a4ac9f06a291718,com.docker.compose.project.working_dir=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo,desktop.docker.io/ports.scheme=v2,com.docker.compose.project.config_files=D:\\Documents\\FPT UNI\\Fall2026\\MSS301\\DE190530_PhamDangKhoa_MSS301-Lab\\Slot 13\\saga-demo\\docker-compose.yml,com.docker.compose.service=sqlserver,vendor=Microsoft",
+    "LocalVolumes": "1",
+    "Mounts": "saga-demo_mssq\u2026",
+    "Name": "saga-sqlserver",
+    "Names": "saga-sqlserver",
+    "Networks": "saga-demo_default",
+    "Ports": "0.0.0.0:14330->1433/tcp, [::]:14330->1433/tcp",
+    "Project": "saga-demo",
+    "Publishers": [
+      {
+        "URL": "0.0.0.0",
+        "TargetPort": 1433,
+        "PublishedPort": 14330,
+        "Protocol": "tcp"
+      },
+      {
+        "URL": "::",
+        "TargetPort": 1433,
+        "PublishedPort": 14330,
+        "Protocol": "tcp"
+      }
+    ],
+    "RunningFor": "40 minutes ago",
+    "Service": "sqlserver",
+    "Size": "0B",
+    "State": "running",
+    "Status": "Up 40 minutes (healthy)"
+  }
+]

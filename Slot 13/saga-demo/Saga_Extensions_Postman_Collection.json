@@ -1,0 +1,1636 @@
+{
+  "info": {
+    "name": "MSS301 - Saga Extensions",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run one folder with its matching Compose override. scripts/run-extensions.cjs switches profiles and executes the complete suite. Do not run the entire collection against one profile."
+  },
+  "variable": [
+    {
+      "key": "orderUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "inventoryUrl",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "paymentUrl",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "shippingUrl",
+      "value": "http://localhost:8084"
+    },
+    {
+      "key": "recoveryOrderId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "EXT-4 - Recover KB8",
+      "description": "Start recovery profile; set recoveryOrderId to the KB8 order before running.",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Recover KB8",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{recoveryOrderId}}/compensate"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.test(\"Recovered CANCELLED/COMPENSATED\", () => { pm.expect(o.status).to.eql(\"CANCELLED\"); pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Repeat recovery safely",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{recoveryOrderId}}/compensate"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Already compensated\", () => pm.expect(pm.response.json().sagaStatus).to.eql(\"COMPENSATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Stock restored once; no debit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {\"P2\": 1};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Recovery saga logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{recoveryOrderId}}/saga-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json(); pm.test(\"Three original failures retained\", () => pm.expect(logs.filter(l => l.step === \"COMPENSATION\" && l.result === \"FAILED\")).to.have.length(3)); pm.test(\"Recovery completed\", () => pm.expect(logs.at(-1).step).to.eql(\"CANCEL_ORDER\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT-1 - Shipping rejection",
+      "description": "Start docker-compose.shipping.yml override.",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Shipping rejects four items",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{orderUrl}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 4, \"amount\": 80}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                  "pm.test(\"Order CANCELLED\", () => pm.expect(o.status).to.eql(\"CANCELLED\"));",
+                  "pm.test(\"Saga COMPENSATED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wallet and stock restored",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inspect saga logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{extensionOrderId}}/saga-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();",
+                  "pm.test(\"Exact execution sequence\", () => pm.expect(logs.map(l => l.step)).to.eql([\"CREATE_ORDER\", \"RESERVE_INVENTORY\", \"PROCESS_PAYMENT\", \"SAGA\", \"COMPENSATION\", \"COMPENSATION\", \"CANCEL_ORDER\"]));",
+                  "pm.test(\"Compensation LIFO\", () => pm.expect(logs.filter(l => l.step === \"COMPENSATION\" && l.result === \"SUCCESS\").map(l => l.message.split(\" - \")[0])).to.eql([\"REFUND_PAYMENT\", \"RELEASE_INVENTORY\"]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Payment was refunded",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{paymentUrl}}/api/payments"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const p = pm.response.json().find(p => p.orderId === Number(pm.collectionVariables.get(\"extensionOrderId\"))); pm.test(\"Payment REFUNDED\", () => pm.expect(p.status).to.eql(\"REFUNDED\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT-1 - Shipping success",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create shipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{orderUrl}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                  "pm.test(\"Order CONFIRMED\", () => pm.expect(o.status).to.eql(\"CONFIRMED\"));",
+                  "pm.test(\"Saga COMPLETED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPLETED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "One item purchased",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {\"P2\": -1};",
+                  "const balanceDelta = {\"C1\": -20};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inspect saga logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{extensionOrderId}}/saga-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();",
+                  "pm.test(\"Exact execution sequence\", () => pm.expect(logs.map(l => l.step)).to.eql([\"CREATE_ORDER\", \"RESERVE_INVENTORY\", \"PROCESS_PAYMENT\", \"CREATE_SHIPPING\", \"CONFIRM_ORDER\"]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inspect shipment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{shippingUrl}}/api/shipping"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json().find(s => s.orderId === Number(pm.collectionVariables.get(\"extensionOrderId\"))); pm.test(\"Shipment CREATED\", () => pm.expect(s.status).to.eql(\"CREATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject recovery of successful purchase",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{extensionOrderId}}/compensate"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT-1 - Shipping idempotency",
+      "description": "Requires shipping-service on 8084. Uses an isolated shipment id without changing inventory or wallets.",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create isolated shipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{shippingUrl}}/api/shipping/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"orderId\": \"{{isolatedShipmentId}}\", \"productId\": \"P2\", \"quantity\": 1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"isolatedShipmentId\", Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"CREATED\", () => pm.expect(pm.response.json().status).to.eql(\"CREATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Repeat create",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{shippingUrl}}/api/shipping/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"orderId\": \"{{isolatedShipmentId}}\", \"productId\": \"P2\", \"quantity\": 1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Still CREATED\", () => pm.expect(pm.response.json().status).to.eql(\"CREATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel shipment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{shippingUrl}}/api/shipping/cancel/{{isolatedShipmentId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Repeat cancellation",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{shippingUrl}}/api/shipping/cancel/{{isolatedShipmentId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "One cancelled shipment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{shippingUrl}}/api/shipping"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const rows = pm.response.json().filter(s => s.orderId === Number(pm.collectionVariables.get(\"isolatedShipmentId\"))); pm.test(\"One CANCELLED receipt\", () => { pm.expect(rows).to.have.length(1); pm.expect(rows[0].status).to.eql(\"CANCELLED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No other resources changed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT-2 - Timeout after commit",
+      "description": "Start timeout override. Payment delays its HTTP response for 5s after committing, client times out at 2s.",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lose payment acknowledgement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{orderUrl}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                  "pm.test(\"Order CANCELLED\", () => pm.expect(o.status).to.eql(\"CANCELLED\"));",
+                  "pm.test(\"Saga COMPENSATED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No money or stock lost",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inspect saga logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{extensionOrderId}}/saga-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();",
+                  "pm.test(\"Compensation LIFO\", () => pm.expect(logs.filter(l => l.step === \"COMPENSATION\" && l.result === \"SUCCESS\").map(l => l.message.split(\" - \")[0])).to.eql([\"REFUND_PAYMENT\", \"RELEASE_INVENTORY\"]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Payment receipt shows refund",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{paymentUrl}}/api/payments"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const p = pm.response.json().find(p => p.orderId === Number(pm.collectionVariables.get(\"extensionOrderId\"))); pm.test(\"Committed payment REFUNDED\", () => pm.expect(p.status).to.eql(\"REFUNDED\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT-5 - Outbox success",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit async order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{orderUrl}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wait for async completion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                  "function check(remaining) {",
+                  "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                  "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                  "    const order = response.json().find(o => o.id === id);",
+                  "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                  "      pm.test(\"Async order CONFIRMED\", () => pm.expect(order.status).to.eql(\"CONFIRMED\"));",
+                  "      pm.test(\"Async saga COMPLETED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPLETED\"));",
+                  "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                  "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                  "  });",
+                  "}",
+                  "check(100);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Purchase applied once",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {\"P2\": -1};",
+                  "const balanceDelta = {\"C1\": -20};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inspect saga logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{extensionOrderId}}/saga-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT-5 - Outbox payment failure",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject insufficient balance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{orderUrl}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C2\", \"productId\": \"P1\", \"quantity\": 1, \"amount\": 1000}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wait for async completion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                  "function check(remaining) {",
+                  "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                  "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                  "    const order = response.json().find(o => o.id === id);",
+                  "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                  "      pm.test(\"Async order CANCELLED\", () => pm.expect(order.status).to.eql(\"CANCELLED\"));",
+                  "      pm.test(\"Async saga COMPENSATED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPENSATED\"));",
+                  "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                  "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                  "  });",
+                  "}",
+                  "check(100);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Compensation restores all resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inspect saga logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{extensionOrderId}}/saga-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT-3 - Choreography success",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit async order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{orderUrl}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wait for async completion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                  "function check(remaining) {",
+                  "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                  "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                  "    const order = response.json().find(o => o.id === id);",
+                  "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                  "      pm.test(\"Async order CONFIRMED\", () => pm.expect(order.status).to.eql(\"CONFIRMED\"));",
+                  "      pm.test(\"Async saga COMPLETED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPLETED\"));",
+                  "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                  "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                  "  });",
+                  "}",
+                  "check(100);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Purchase applied once",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {\"P2\": -1};",
+                  "const balanceDelta = {\"C1\": -20};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inspect saga logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{extensionOrderId}}/saga-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT-3 - Choreography payment failure",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject insufficient balance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{orderUrl}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C2\", \"productId\": \"P1\", \"quantity\": 1, \"amount\": 1000}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wait for async completion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                  "function check(remaining) {",
+                  "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                  "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                  "    const order = response.json().find(o => o.id === id);",
+                  "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                  "      pm.test(\"Async order CANCELLED\", () => pm.expect(order.status).to.eql(\"CANCELLED\"));",
+                  "      pm.test(\"Async saga COMPENSATED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPENSATED\"));",
+                  "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                  "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                  "  });",
+                  "}",
+                  "check(100);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Compensation restores all resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inspect saga logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{extensionOrderId}}/saga-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT-5 - Queue before restart",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Durably queue order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{orderUrl}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inspect durable RESERVE command",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{extensionOrderId}}/outbox"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const c = pm.response.json(); pm.test(\"One queued command\", () => pm.expect(c).to.have.length(1)); pm.test(\"RESERVE persists pending\", () => { pm.expect(c[0].command).to.eql(\"RESERVE\"); pm.expect(c[0].state).to.eql(\"PENDING\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT-5 - Resume after restart",
+      "item": [
+        {
+          "name": "Wait for async completion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                  "function check(remaining) {",
+                  "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                  "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                  "    const order = response.json().find(o => o.id === id);",
+                  "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                  "      pm.test(\"Async order CONFIRMED\", () => pm.expect(order.status).to.eql(\"CONFIRMED\"));",
+                  "      pm.test(\"Async saga COMPLETED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPLETED\"));",
+                  "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                  "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                  "  });",
+                  "}",
+                  "check(100);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Purchase completed exactly once",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {\"P2\": -1};",
+                  "const balanceDelta = {\"C1\": -20};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "All commands delivered",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{extensionOrderId}}/outbox"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const c = pm.response.json(); pm.test(\"RESERVE PAY CONFIRM delivered\", () => pm.expect(c.map(c => c.command)).to.eql([\"RESERVE\", \"PAY\", \"CONFIRM\"])); pm.test(\"All commands DONE\", () => c.forEach(c => pm.expect(c.state).to.eql(\"DONE\")));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT-6 - HTTP interfaces",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Interface payment rejection",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{orderUrl}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C2\", \"productId\": \"P1\", \"quantity\": 1, \"amount\": 1000}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                  "pm.test(\"Order CANCELLED\", () => pm.expect(o.status).to.eql(\"CANCELLED\"));",
+                  "pm.test(\"Saga COMPENSATED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Proxy compensation works",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{inventoryUrl}}/api/inventory/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inspect saga logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{orderUrl}}/api/orders/{{extensionOrderId}}/saga-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();",
+                  "pm.test(\"Exact execution sequence\", () => pm.expect(logs.map(l => l.step)).to.eql([\"CREATE_ORDER\", \"RESERVE_INVENTORY\", \"SAGA\", \"COMPENSATION\", \"CANCEL_ORDER\"]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

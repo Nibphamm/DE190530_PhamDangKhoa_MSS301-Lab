@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="MSS301 - Saga Extensions" tests="7" time="0.111">
+  <testsuite name="EXT-1 - Shipping idempotency / Snapshot" id="68494a7d-64f0-4cfc-8fd9-e760920fddc8" timestamp="2026-10-22T12:20:37.481Z" tests="2" failures="0" errors="0" time="0.016">
+    <testcase name="HTTP 200" time="0.016" classname="Ext1ShippingIdempotencySnapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.016" classname="Ext1ShippingIdempotencySnapshot"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping idempotency / Create isolated shipment" id="286dcea5-c928-4e38-ae63-0764f49441ac" timestamp="2026-10-22T12:20:37.481Z" tests="2" failures="0" errors="0" time="0.022">
+    <testcase name="HTTP 200" time="0.022" classname="Ext1ShippingIdempotencyCreateIsolatedShipment"/>
+    <testcase name="CREATED" time="0.022" classname="Ext1ShippingIdempotencyCreateIsolatedShipment"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping idempotency / Repeat create" id="0460224c-7938-4077-b67e-9a81c3be4d5e" timestamp="2026-10-22T12:20:37.481Z" tests="2" failures="0" errors="0" time="0.011">
+    <testcase name="HTTP 200" time="0.011" classname="Ext1ShippingIdempotencyRepeatCreate"/>
+    <testcase name="Still CREATED" time="0.011" classname="Ext1ShippingIdempotencyRepeatCreate"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping idempotency / Cancel shipment" id="2893627b-c421-4006-bd12-28ee45417df6" timestamp="2026-10-22T12:20:37.481Z" tests="1" failures="0" errors="0" time="0.030">
+    <testcase name="HTTP 200" time="0.030" classname="Ext1ShippingIdempotencyCancelShipment"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping idempotency / Repeat cancellation" id="7cd80082-2c0c-43a9-acdb-dad5bb1c163d" timestamp="2026-10-22T12:20:37.481Z" tests="1" failures="0" errors="0" time="0.010">
+    <testcase name="HTTP 200" time="0.010" classname="Ext1ShippingIdempotencyRepeatCancellation"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping idempotency / One cancelled shipment" id="0245fcf9-a883-48ff-8bd6-201ef44a888d" timestamp="2026-10-22T12:20:37.481Z" tests="2" failures="0" errors="0" time="0.010">
+    <testcase name="HTTP 200" time="0.010" classname="Ext1ShippingIdempotencyOneCancelledShipment"/>
+    <testcase name="One CANCELLED receipt" time="0.010" classname="Ext1ShippingIdempotencyOneCancelledShipment"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping idempotency / No other resources changed" id="07addaff-c496-4cbd-a7a4-d77c173e3135" timestamp="2026-10-22T12:20:37.481Z" tests="7" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="Ext1ShippingIdempotencyNoOtherResourcesChanged"/>
+    <testcase name="Both products exist" time="0.012" classname="Ext1ShippingIdempotencyNoOtherResourcesChanged"/>
+    <testcase name="Stock delta P1" time="0.012" classname="Ext1ShippingIdempotencyNoOtherResourcesChanged"/>
+    <testcase name="Stock delta P2" time="0.012" classname="Ext1ShippingIdempotencyNoOtherResourcesChanged"/>
+    <testcase name="Wallet verification succeeds" time="0.012" classname="Ext1ShippingIdempotencyNoOtherResourcesChanged"/>
+    <testcase name="Balance delta C1" time="0.012" classname="Ext1ShippingIdempotencyNoOtherResourcesChanged"/>
+    <testcase name="Balance delta C2" time="0.012" classname="Ext1ShippingIdempotencyNoOtherResourcesChanged"/>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="MSS301 - Saga Demo (Spring Boot 4.1.1)" tests="36" time="2.662">
+  <testsuite name="0 - Service checks / Products" id="01e55fbc-8d2e-4da1-936c-337467a3e34f" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.051">
+    <testcase name="HTTP 200" time="0.051" classname="0ServiceChecksProducts"/>
+    <testcase name="Two products" time="0.051" classname="0ServiceChecksProducts"/>
+  </testsuite>
+  <testsuite name="0 - Service checks / Wallets" id="bc66ce92-8ad0-4594-b635-670ac17aa37b" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.025">
+    <testcase name="HTTP 200" time="0.025" classname="0ServiceChecksWallets"/>
+    <testcase name="Two wallets" time="0.025" classname="0ServiceChecksWallets"/>
+  </testsuite>
+  <testsuite name="0 - Service checks / Orders" id="e738d4db-bb70-4783-9796-34962cea7b1e" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.419">
+    <testcase name="HTTP 200" time="0.419" classname="0ServiceChecksOrders"/>
+    <testcase name="Orders array" time="0.419" classname="0ServiceChecksOrders"/>
+  </testsuite>
+  <testsuite name="KB1 - Happy path / [KB1] 1. Snapshot" id="43b5d3fd-1abe-4a1b-a022-4ede68358c9f" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.015">
+    <testcase name="HTTP 200" time="0.015" classname="Kb1HappyPathKb11Snapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.015" classname="Kb1HappyPathKb11Snapshot"/>
+  </testsuite>
+  <testsuite name="KB1 - Happy path / [KB1] 2. Place order" id="ff4bb78b-7735-45d8-bf5a-c2ae0b0e595a" timestamp="2026-10-22T11:47:53.186Z" tests="4" failures="0" errors="0" time="0.664">
+    <testcase name="HTTP 200" time="0.664" classname="Kb1HappyPathKb12PlaceOrder"/>
+    <testcase name="Order status CONFIRMED" time="0.664" classname="Kb1HappyPathKb12PlaceOrder"/>
+    <testcase name="Saga status COMPLETED" time="0.664" classname="Kb1HappyPathKb12PlaceOrder"/>
+    <testcase name="No failure reason" time="0.664" classname="Kb1HappyPathKb12PlaceOrder"/>
+  </testsuite>
+  <testsuite name="KB1 - Happy path / [KB1] 3. Verify stock and wallets" id="c3e9ccbd-1e43-449a-aabc-e7a1788cbbf8" timestamp="2026-10-22T11:47:53.186Z" tests="7" failures="0" errors="0" time="0.014">
+    <testcase name="HTTP 200" time="0.014" classname="Kb1HappyPathKb13VerifyStockAndWallets"/>
+    <testcase name="Both products exist" time="0.014" classname="Kb1HappyPathKb13VerifyStockAndWallets"/>
+    <testcase name="Stock delta P1" time="0.014" classname="Kb1HappyPathKb13VerifyStockAndWallets"/>
+    <testcase name="Stock delta P2" time="0.014" classname="Kb1HappyPathKb13VerifyStockAndWallets"/>
+    <testcase name="Wallet verification succeeds" time="0.014" classname="Kb1HappyPathKb13VerifyStockAndWallets"/>
+    <testcase name="Balance delta C1" time="0.014" classname="Kb1HappyPathKb13VerifyStockAndWallets"/>
+    <testcase name="Balance delta C2" time="0.014" classname="Kb1HappyPathKb13VerifyStockAndWallets"/>
+  </testsuite>
+  <testsuite name="KB1 - Happy path / [KB1] 4. Saga logs" id="e9956222-62cc-4d03-9570-21d95023d08d" timestamp="2026-10-22T11:47:53.186Z" tests="3" failures="0" errors="0" time="0.447">
+    <testcase name="HTTP 200" time="0.447" classname="Kb1HappyPathKb14SagaLogs"/>
+    <testcase name="Exact saga step order" time="0.447" classname="Kb1HappyPathKb14SagaLogs"/>
+    <testcase name="ISO timestamps" time="0.447" classname="Kb1HappyPathKb14SagaLogs"/>
+  </testsuite>
+  <testsuite name="KB2 - Payment rejected (402) / [KB2] 1. Snapshot" id="1edd8a22-23fd-47a6-898d-dc0581de59d0" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.014">
+    <testcase name="HTTP 200" time="0.014" classname="Kb2PaymentRejected402Kb21Snapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.014" classname="Kb2PaymentRejected402Kb21Snapshot"/>
+  </testsuite>
+  <testsuite name="KB2 - Payment rejected (402) / [KB2] 2. Place order" id="e0b938ef-c516-4949-992b-c178b66a950a" timestamp="2026-10-22T11:47:53.186Z" tests="4" failures="0" errors="0" time="0.219">
+    <testcase name="HTTP 200" time="0.219" classname="Kb2PaymentRejected402Kb22PlaceOrder"/>
+    <testcase name="Order status CANCELLED" time="0.219" classname="Kb2PaymentRejected402Kb22PlaceOrder"/>
+    <testcase name="Saga status COMPENSATED" time="0.219" classname="Kb2PaymentRejected402Kb22PlaceOrder"/>
+    <testcase name="Failure reason" time="0.219" classname="Kb2PaymentRejected402Kb22PlaceOrder"/>
+  </testsuite>
+  <testsuite name="KB2 - Payment rejected (402) / [KB2] 3. Verify stock and wallets" id="b345bd38-30c3-4ba3-a710-65c4bd7bf065" timestamp="2026-10-22T11:47:53.186Z" tests="7" failures="0" errors="0" time="0.010">
+    <testcase name="HTTP 200" time="0.010" classname="Kb2PaymentRejected402Kb23VerifyStockAndWallets"/>
+    <testcase name="Both products exist" time="0.010" classname="Kb2PaymentRejected402Kb23VerifyStockAndWallets"/>
+    <testcase name="Stock delta P1" time="0.010" classname="Kb2PaymentRejected402Kb23VerifyStockAndWallets"/>
+    <testcase name="Stock delta P2" time="0.010" classname="Kb2PaymentRejected402Kb23VerifyStockAndWallets"/>
+    <testcase name="Wallet verification succeeds" time="0.010" classname="Kb2PaymentRejected402Kb23VerifyStockAndWallets"/>
+    <testcase name="Balance delta C1" time="0.010" classname="Kb2PaymentRejected402Kb23VerifyStockAndWallets"/>
+    <testcase name="Balance delta C2" time="0.010" classname="Kb2PaymentRejected402Kb23VerifyStockAndWallets"/>
+  </testsuite>
+  <testsuite name="KB2 - Payment rejected (402) / [KB2] 4. Saga logs" id="81e67039-e24d-40d8-9833-ec1f05f653e6" timestamp="2026-10-22T11:47:53.186Z" tests="3" failures="0" errors="0" time="0.013">
+    <testcase name="HTTP 200" time="0.013" classname="Kb2PaymentRejected402Kb24SagaLogs"/>
+    <testcase name="Exact saga step order" time="0.013" classname="Kb2PaymentRejected402Kb24SagaLogs"/>
+    <testcase name="ISO timestamps" time="0.013" classname="Kb2PaymentRejected402Kb24SagaLogs"/>
+  </testsuite>
+  <testsuite name="KB2 - Payment rejected (402) / [KB2] 5. Reservation released" id="91e45b6d-61ce-4211-bd41-462ee0d1079e" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.011">
+    <testcase name="HTTP 200" time="0.011" classname="Kb2PaymentRejected402Kb25ReservationReleased"/>
+    <testcase name="Reservation is RELEASED" time="0.011" classname="Kb2PaymentRejected402Kb25ReservationReleased"/>
+  </testsuite>
+  <testsuite name="KB3 - Insufficient stock (409) / [KB3] 1. Snapshot" id="90269716-c54f-4765-8ce9-519c2f77141b" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.016">
+    <testcase name="HTTP 200" time="0.016" classname="Kb3InsufficientStock409Kb31Snapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.016" classname="Kb3InsufficientStock409Kb31Snapshot"/>
+  </testsuite>
+  <testsuite name="KB3 - Insufficient stock (409) / [KB3] 2. Place order" id="f251a25f-87cf-4e30-9e61-60bb0f7f6ba5" timestamp="2026-10-22T11:47:53.186Z" tests="4" failures="0" errors="0" time="0.154">
+    <testcase name="HTTP 200" time="0.154" classname="Kb3InsufficientStock409Kb32PlaceOrder"/>
+    <testcase name="Order status CANCELLED" time="0.154" classname="Kb3InsufficientStock409Kb32PlaceOrder"/>
+    <testcase name="Saga status COMPENSATED" time="0.154" classname="Kb3InsufficientStock409Kb32PlaceOrder"/>
+    <testcase name="Failure reason" time="0.154" classname="Kb3InsufficientStock409Kb32PlaceOrder"/>
+  </testsuite>
+  <testsuite name="KB3 - Insufficient stock (409) / [KB3] 3. Verify stock and wallets" id="db2318bb-c6a4-498a-b1b4-0d41903cc934" timestamp="2026-10-22T11:47:53.186Z" tests="7" failures="0" errors="0" time="0.016">
+    <testcase name="HTTP 200" time="0.016" classname="Kb3InsufficientStock409Kb33VerifyStockAndWallets"/>
+    <testcase name="Both products exist" time="0.016" classname="Kb3InsufficientStock409Kb33VerifyStockAndWallets"/>
+    <testcase name="Stock delta P1" time="0.016" classname="Kb3InsufficientStock409Kb33VerifyStockAndWallets"/>
+    <testcase name="Stock delta P2" time="0.016" classname="Kb3InsufficientStock409Kb33VerifyStockAndWallets"/>
+    <testcase name="Wallet verification succeeds" time="0.016" classname="Kb3InsufficientStock409Kb33VerifyStockAndWallets"/>
+    <testcase name="Balance delta C1" time="0.016" classname="Kb3InsufficientStock409Kb33VerifyStockAndWallets"/>
+    <testcase name="Balance delta C2" time="0.016" classname="Kb3InsufficientStock409Kb33VerifyStockAndWallets"/>
+  </testsuite>
+  <testsuite name="KB3 - Insufficient stock (409) / [KB3] 4. Saga logs" id="3f80b1c5-fbf5-40ab-ba99-a04fa9a31757" timestamp="2026-10-22T11:47:53.186Z" tests="3" failures="0" errors="0" time="0.013">
+    <testcase name="HTTP 200" time="0.013" classname="Kb3InsufficientStock409Kb34SagaLogs"/>
+    <testcase name="Exact saga step order" time="0.013" classname="Kb3InsufficientStock409Kb34SagaLogs"/>
+    <testcase name="ISO timestamps" time="0.013" classname="Kb3InsufficientStock409Kb34SagaLogs"/>
+  </testsuite>
+  <testsuite name="KB4 - Unknown product (404) / [KB4] 1. Snapshot" id="e9b08496-9b6f-4220-a62e-ead801619d9f" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.015">
+    <testcase name="HTTP 200" time="0.015" classname="Kb4UnknownProduct404Kb41Snapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.015" classname="Kb4UnknownProduct404Kb41Snapshot"/>
+  </testsuite>
+  <testsuite name="KB4 - Unknown product (404) / [KB4] 2. Place order" id="3bd25c8a-0b11-4d75-952c-b5d796d709a9" timestamp="2026-10-22T11:47:53.186Z" tests="4" failures="0" errors="0" time="0.123">
+    <testcase name="HTTP 200" time="0.123" classname="Kb4UnknownProduct404Kb42PlaceOrder"/>
+    <testcase name="Order status CANCELLED" time="0.123" classname="Kb4UnknownProduct404Kb42PlaceOrder"/>
+    <testcase name="Saga status COMPENSATED" time="0.123" classname="Kb4UnknownProduct404Kb42PlaceOrder"/>
+    <testcase name="Failure reason" time="0.123" classname="Kb4UnknownProduct404Kb42PlaceOrder"/>
+  </testsuite>
+  <testsuite name="KB4 - Unknown product (404) / [KB4] 3. Verify stock and wallets" id="2c5c823c-151c-4228-a9e2-9d772790a5bb" timestamp="2026-10-22T11:47:53.186Z" tests="7" failures="0" errors="0" time="0.015">
+    <testcase name="HTTP 200" time="0.015" classname="Kb4UnknownProduct404Kb43VerifyStockAndWallets"/>
+    <testcase name="Both products exist" time="0.015" classname="Kb4UnknownProduct404Kb43VerifyStockAndWallets"/>
+    <testcase name="Stock delta P1" time="0.015" classname="Kb4UnknownProduct404Kb43VerifyStockAndWallets"/>
+    <testcase name="Stock delta P2" time="0.015" classname="Kb4UnknownProduct404Kb43VerifyStockAndWallets"/>
+    <testcase name="Wallet verification succeeds" time="0.015" classname="Kb4UnknownProduct404Kb43VerifyStockAndWallets"/>
+    <testcase name="Balance delta C1" time="0.015" classname="Kb4UnknownProduct404Kb43VerifyStockAndWallets"/>
+    <testcase name="Balance delta C2" time="0.015" classname="Kb4UnknownProduct404Kb43VerifyStockAndWallets"/>
+  </testsuite>
+  <testsuite name="KB4 - Unknown product (404) / [KB4] 4. Saga logs" id="c6523ed4-7fae-4595-bd2f-5df06b295951" timestamp="2026-10-22T11:47:53.186Z" tests="3" failures="0" errors="0" time="0.008">
+    <testcase name="HTTP 200" time="0.008" classname="Kb4UnknownProduct404Kb44SagaLogs"/>
+    <testcase name="Exact saga step order" time="0.008" classname="Kb4UnknownProduct404Kb44SagaLogs"/>
+    <testcase name="ISO timestamps" time="0.008" classname="Kb4UnknownProduct404Kb44SagaLogs"/>
+  </testsuite>
+  <testsuite name="KB5 - Unknown wallet (404) / [KB5] 1. Snapshot" id="0b7811b3-60e7-4b33-95fc-e7352be42d95" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="Kb5UnknownWallet404Kb51Snapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.012" classname="Kb5UnknownWallet404Kb51Snapshot"/>
+  </testsuite>
+  <testsuite name="KB5 - Unknown wallet (404) / [KB5] 2. Place order" id="980ae51a-04b2-4629-9509-40f75fbe7ff2" timestamp="2026-10-22T11:47:53.186Z" tests="4" failures="0" errors="0" time="0.171">
+    <testcase name="HTTP 200" time="0.171" classname="Kb5UnknownWallet404Kb52PlaceOrder"/>
+    <testcase name="Order status CANCELLED" time="0.171" classname="Kb5UnknownWallet404Kb52PlaceOrder"/>
+    <testcase name="Saga status COMPENSATED" time="0.171" classname="Kb5UnknownWallet404Kb52PlaceOrder"/>
+    <testcase name="Failure reason" time="0.171" classname="Kb5UnknownWallet404Kb52PlaceOrder"/>
+  </testsuite>
+  <testsuite name="KB5 - Unknown wallet (404) / [KB5] 3. Verify stock and wallets" id="ca305300-f0f6-4614-ba33-5c07a552b808" timestamp="2026-10-22T11:47:53.186Z" tests="7" failures="0" errors="0" time="0.016">
+    <testcase name="HTTP 200" time="0.016" classname="Kb5UnknownWallet404Kb53VerifyStockAndWallets"/>
+    <testcase name="Both products exist" time="0.016" classname="Kb5UnknownWallet404Kb53VerifyStockAndWallets"/>
+    <testcase name="Stock delta P1" time="0.016" classname="Kb5UnknownWallet404Kb53VerifyStockAndWallets"/>
+    <testcase name="Stock delta P2" time="0.016" classname="Kb5UnknownWallet404Kb53VerifyStockAndWallets"/>
+    <testcase name="Wallet verification succeeds" time="0.016" classname="Kb5UnknownWallet404Kb53VerifyStockAndWallets"/>
+    <testcase name="Balance delta C1" time="0.016" classname="Kb5UnknownWallet404Kb53VerifyStockAndWallets"/>
+    <testcase name="Balance delta C2" time="0.016" classname="Kb5UnknownWallet404Kb53VerifyStockAndWallets"/>
+  </testsuite>
+  <testsuite name="KB5 - Unknown wallet (404) / [KB5] 4. Saga logs" id="11ad1f2e-e3dd-449e-9281-a150e45380d9" timestamp="2026-10-22T11:47:53.186Z" tests="3" failures="0" errors="0" time="0.008">
+    <testcase name="HTTP 200" time="0.008" classname="Kb5UnknownWallet404Kb54SagaLogs"/>
+    <testcase name="Exact saga step order" time="0.008" classname="Kb5UnknownWallet404Kb54SagaLogs"/>
+    <testcase name="ISO timestamps" time="0.008" classname="Kb5UnknownWallet404Kb54SagaLogs"/>
+  </testsuite>
+  <testsuite name="KB5 - Unknown wallet (404) / [KB5] 5. Reservation released" id="2feb41b9-9c24-4624-bcb2-d2e88443b304" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.009">
+    <testcase name="HTTP 200" time="0.009" classname="Kb5UnknownWallet404Kb55ReservationReleased"/>
+    <testcase name="Reservation is RELEASED" time="0.009" classname="Kb5UnknownWallet404Kb55ReservationReleased"/>
+  </testsuite>
+  <testsuite name="KB7 - Idempotency / [KB7] Snapshot" id="31e73b39-1855-4043-b98e-db527766f5a5" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.013">
+    <testcase name="HTTP 200" time="0.013" classname="Kb7IdempotencyKb7Snapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.013" classname="Kb7IdempotencyKb7Snapshot"/>
+  </testsuite>
+  <testsuite name="KB7 - Idempotency / [KB7] Repeat release 1" id="e436034d-8ad8-42f1-a3ca-eb65614947b4" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.018">
+    <testcase name="HTTP 200" time="0.018" classname="Kb7IdempotencyKb7RepeatRelease1"/>
+    <testcase name="RELEASED response" time="0.018" classname="Kb7IdempotencyKb7RepeatRelease1"/>
+  </testsuite>
+  <testsuite name="KB7 - Idempotency / [KB7] Repeat release 2" id="8c3ceaad-f479-4122-acf3-f4916bbdbd6d" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="Kb7IdempotencyKb7RepeatRelease2"/>
+    <testcase name="RELEASED response" time="0.012" classname="Kb7IdempotencyKb7RepeatRelease2"/>
+  </testsuite>
+  <testsuite name="KB7 - Idempotency / [KB7] Repeat reserve" id="54bb2313-5d34-4085-a969-dcd4f8d811fa" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.011">
+    <testcase name="HTTP 200" time="0.011" classname="Kb7IdempotencyKb7RepeatReserve"/>
+    <testcase name="Still RESERVED" time="0.011" classname="Kb7IdempotencyKb7RepeatReserve"/>
+  </testsuite>
+  <testsuite name="KB7 - Idempotency / [KB7] Repeat pay" id="ec70aadd-e3ce-491e-862c-f248f9b2143c" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="Kb7IdempotencyKb7RepeatPay"/>
+    <testcase name="Still PAID" time="0.012" classname="Kb7IdempotencyKb7RepeatPay"/>
+  </testsuite>
+  <testsuite name="KB7 - Idempotency / [KB7] Refund unpaid order" id="5a3e74fa-d9b0-46b3-bae5-431f7999bdcf" timestamp="2026-10-22T11:47:53.186Z" tests="1" failures="0" errors="0" time="0.019">
+    <testcase name="HTTP 200" time="0.019" classname="Kb7IdempotencyKb7RefundUnpaidOrder"/>
+  </testsuite>
+  <testsuite name="KB7 - Idempotency / [KB7] Verify repeated calls" id="cb0cf788-655d-494a-9b89-9cf58b235df4" timestamp="2026-10-22T11:47:53.186Z" tests="7" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="Kb7IdempotencyKb7VerifyRepeatedCalls"/>
+    <testcase name="Both products exist" time="0.012" classname="Kb7IdempotencyKb7VerifyRepeatedCalls"/>
+    <testcase name="Stock delta P1" time="0.012" classname="Kb7IdempotencyKb7VerifyRepeatedCalls"/>
+    <testcase name="Stock delta P2" time="0.012" classname="Kb7IdempotencyKb7VerifyRepeatedCalls"/>
+    <testcase name="Wallet verification succeeds" time="0.012" classname="Kb7IdempotencyKb7VerifyRepeatedCalls"/>
+    <testcase name="Balance delta C1" time="0.012" classname="Kb7IdempotencyKb7VerifyRepeatedCalls"/>
+    <testcase name="Balance delta C2" time="0.012" classname="Kb7IdempotencyKb7VerifyRepeatedCalls"/>
+  </testsuite>
+  <testsuite name="KB7 - Idempotency / [KB7] Pay isolated test payment" id="d6b623e2-4684-4b0d-968a-dd712348851e" timestamp="2026-10-22T11:47:53.186Z" tests="1" failures="0" errors="0" time="0.027">
+    <testcase name="HTTP 200" time="0.027" classname="Kb7IdempotencyKb7PayIsolatedTestPayment"/>
+  </testsuite>
+  <testsuite name="KB7 - Idempotency / [KB7] Refund isolated payment 1" id="66fcb74b-a7d2-4d43-95eb-8cafe5cbeb9e" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.035">
+    <testcase name="HTTP 200" time="0.035" classname="Kb7IdempotencyKb7RefundIsolatedPayment1"/>
+    <testcase name="REFUNDED response" time="0.035" classname="Kb7IdempotencyKb7RefundIsolatedPayment1"/>
+  </testsuite>
+  <testsuite name="KB7 - Idempotency / [KB7] Refund isolated payment 2" id="fafa80d3-2aa6-4e54-92c9-5a72b31efcdc" timestamp="2026-10-22T11:47:53.186Z" tests="2" failures="0" errors="0" time="0.013">
+    <testcase name="HTTP 200" time="0.013" classname="Kb7IdempotencyKb7RefundIsolatedPayment2"/>
+    <testcase name="REFUNDED response" time="0.013" classname="Kb7IdempotencyKb7RefundIsolatedPayment2"/>
+  </testsuite>
+  <testsuite name="KB7 - Idempotency / [KB7] Verify refund happens once" id="c534fb71-f6a5-407a-b43b-b9ce4267c1bf" timestamp="2026-10-22T11:47:53.186Z" tests="7" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="Kb7IdempotencyKb7VerifyRefundHappensOnce"/>
+    <testcase name="Both products exist" time="0.012" classname="Kb7IdempotencyKb7VerifyRefundHappensOnce"/>
+    <testcase name="Stock delta P1" time="0.012" classname="Kb7IdempotencyKb7VerifyRefundHappensOnce"/>
+    <testcase name="Stock delta P2" time="0.012" classname="Kb7IdempotencyKb7VerifyRefundHappensOnce"/>
+    <testcase name="Wallet verification succeeds" time="0.012" classname="Kb7IdempotencyKb7VerifyRefundHappensOnce"/>
+    <testcase name="Balance delta C1" time="0.012" classname="Kb7IdempotencyKb7VerifyRefundHappensOnce"/>
+    <testcase name="Balance delta C2" time="0.012" classname="Kb7IdempotencyKb7VerifyRefundHappensOnce"/>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,4419 @@
+{
+  "collection": {
+    "_": {
+      "postman_id": "5d44ffb6-71b9-4bd0-b4d4-8ff0bc4438b7"
+    },
+    "item": [
+      {
+        "id": "f5b6c795-5b32-447b-b1da-f75a6a9db75f",
+        "name": "EXT-4 - Recover KB8",
+        "description": {
+          "content": "Start recovery profile; set recoveryOrderId to the KB8 order before running.",
+          "type": "text/plain"
+        },
+        "item": [
+          {
+            "id": "6b20e65b-0a52-4984-9ead-e47b425e9e59",
+            "name": "Snapshot",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "54f7bee0-3c7d-4ad2-809e-9e75fbb0871c",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "6c234f53-7848-439f-903a-2ec24208c97d",
+            "name": "Recover KB8",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{recoveryOrderId}}",
+                  "compensate"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "POST"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "d6d6bc66-0ba7-4009-a024-eb016b1164b6",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const o = pm.response.json(); pm.test(\"Recovered CANCELLED/COMPENSATED\", () => { pm.expect(o.status).to.eql(\"CANCELLED\"); pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"); });"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "c8916ade-bec1-41e8-a257-39bf2a013f7b",
+            "name": "Repeat recovery safely",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{recoveryOrderId}}",
+                  "compensate"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "POST"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "d1de6d3d-c1ca-499c-9d49-3de421781b73",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "pm.test(\"Already compensated\", () => pm.expect(pm.response.json().sagaStatus).to.eql(\"COMPENSATED\"));"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "2c8a4052-3a80-42b8-816e-c5d66a823bc5",
+            "name": "Stock restored once; no debit",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "54ec795e-5b85-4a97-b2ce-22971100b0ea",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const stockDelta = {\"P2\": 1};",
+                    "const balanceDelta = {};",
+                    "const products = pm.response.json();",
+                    "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                    "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "9ac35c79-dc58-4f20-bde4-102f825ca2b7",
+            "name": "Recovery saga logs",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{recoveryOrderId}}",
+                  "saga-logs"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "0b09ee5a-6078-4ddd-91f0-c318efaf25fb",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const logs = pm.response.json(); pm.test(\"Three original failures retained\", () => pm.expect(logs.filter(l => l.step === \"COMPENSATION\" && l.result === \"FAILED\")).to.have.length(3)); pm.test(\"Recovery completed\", () => pm.expect(logs.at(-1).step).to.eql(\"CANCEL_ORDER\"));"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "e62e98f4-c936-4fed-95d5-6a5551e0a9a0",
+        "name": "EXT-1 - Shipping rejection",
+        "description": {
+          "content": "Start docker-compose.shipping.yml override.",
+          "type": "text/plain"
+        },
+        "item": [
+          {
+            "id": "497fd08f-4476-4ff9-b549-1b52d9a53861",
+            "name": "Snapshot",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "8cbda619-7f6e-417a-aa38-37905616ad00",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "69fd945a-41fa-443d-844f-07a2003abb31",
+            "name": "Shipping rejects four items",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 4, \"amount\": 80}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "b0dcd15c-d32b-4e05-889f-4fc11d8d725d",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                    "pm.test(\"Order CANCELLED\", () => pm.expect(o.status).to.eql(\"CANCELLED\"));",
+                    "pm.test(\"Saga COMPENSATED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"));"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "9747ba61-6e4b-4c0a-94b1-e081dfaa55c2",
+            "name": "Wallet and stock restored",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "f5dccd9b-c831-4b31-bce8-3959c0e60430",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const stockDelta = {};",
+                    "const balanceDelta = {};",
+                    "const products = pm.response.json();",
+                    "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                    "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "061a6269-fcf3-4065-817b-445d0621d76d",
+            "name": "Inspect saga logs",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{extensionOrderId}}",
+                  "saga-logs"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "8629b081-b113-47f3-9355-ac591bac73f4",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const logs = pm.response.json();",
+                    "pm.test(\"Exact execution sequence\", () => pm.expect(logs.map(l => l.step)).to.eql([\"CREATE_ORDER\", \"RESERVE_INVENTORY\", \"PROCESS_PAYMENT\", \"SAGA\", \"COMPENSATION\", \"COMPENSATION\", \"CANCEL_ORDER\"]));",
+                    "pm.test(\"Compensation LIFO\", () => pm.expect(logs.filter(l => l.step === \"COMPENSATION\" && l.result === \"SUCCESS\").map(l => l.message.split(\" - \")[0])).to.eql([\"REFUND_PAYMENT\", \"RELEASE_INVENTORY\"]));"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "4265a639-abad-4625-b02d-902fe1c6d2f8",
+            "name": "Payment was refunded",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "payments"
+                ],
+                "host": [
+                  "{{paymentUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "c6065d3b-55bf-48b0-b8bc-e3eaed94dcab",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const p = pm.response.json().find(p => p.orderId === Number(pm.collectionVariables.get(\"extensionOrderId\"))); pm.test(\"Payment REFUNDED\", () => pm.expect(p.status).to.eql(\"REFUNDED\"));"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "7c7bc6fa-af57-4812-8460-f2ac3518ea52",
+        "name": "EXT-1 - Shipping success",
+        "item": [
+          {
+            "id": "11d28634-5cc8-4dad-baf8-e10f32a32dfd",
+            "name": "Snapshot",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "05ce8c95-4bb3-4640-aa62-392a8f112e0c",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "87bf3f90-b043-44ed-aae8-dc9271432964",
+            "name": "Create shipment",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "53bd9ab8-0b04-42f7-b3f7-9ce86943a39e",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                    "pm.test(\"Order CONFIRMED\", () => pm.expect(o.status).to.eql(\"CONFIRMED\"));",
+                    "pm.test(\"Saga COMPLETED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPLETED\"));"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "45e81fca-263e-4bc6-b42f-e8c6bd990a6f",
+            "name": "One item purchased",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "fe48cee2-5eb9-43ce-8be6-1bbc39f9af63",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const stockDelta = {\"P2\": -1};",
+                    "const balanceDelta = {\"C1\": -20};",
+                    "const products = pm.response.json();",
+                    "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                    "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "4d2b6549-8a29-496c-9b41-56f576e23350",
+            "name": "Inspect saga logs",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{extensionOrderId}}",
+                  "saga-logs"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "382898ea-533e-4576-908a-ee5c6adab4ab",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const logs = pm.response.json();",
+                    "pm.test(\"Exact execution sequence\", () => pm.expect(logs.map(l => l.step)).to.eql([\"CREATE_ORDER\", \"RESERVE_INVENTORY\", \"PROCESS_PAYMENT\", \"CREATE_SHIPPING\", \"CONFIRM_ORDER\"]));"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "7f637cc6-8ffb-4cf1-8e85-7e2ba1ca46b0",
+            "name": "Inspect shipment",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "shipping"
+                ],
+                "host": [
+                  "{{shippingUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "c1ac435c-62a7-493e-b1bf-cce11a051289",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const s = pm.response.json().find(s => s.orderId === Number(pm.collectionVariables.get(\"extensionOrderId\"))); pm.test(\"Shipment CREATED\", () => pm.expect(s.status).to.eql(\"CREATED\"));"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "38a913b4-c40e-4575-8e12-ebef0ef83274",
+            "name": "Reject recovery of successful purchase",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{extensionOrderId}}",
+                  "compensate"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "POST"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "c4991d53-9541-45a7-b791-37abca8f3959",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "94894d0d-fc24-47d1-88b0-ed94f2b4a60e",
+        "name": "EXT-2 - Timeout after commit",
+        "description": {
+          "content": "Start timeout override. Payment delays its HTTP response for 5s after committing, client times out at 2s.",
+          "type": "text/plain"
+        },
+        "item": [
+          {
+            "id": "195441a9-d0f3-4136-8c5a-bff80dec2a07",
+            "name": "Snapshot",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "_": {
+                    "lastExecutionId": "de8e7ede-3eac-4f61-9651-66d304b6a443"
+                  },
+                  "id": "7ae0d980-fdfc-4b47-9a23-e0b247bc9fe6",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "1a879ab7-943d-4740-96c5-309ae0e4363b",
+            "name": "Lose payment acknowledgement",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "_": {
+                    "lastExecutionId": "30b39d44-0970-445f-b3ab-c93ce0020ec0"
+                  },
+                  "id": "61eca5ca-3131-4e1e-9af6-63f69a40584f",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                    "pm.test(\"Order CANCELLED\", () => pm.expect(o.status).to.eql(\"CANCELLED\"));",
+                    "pm.test(\"Saga COMPENSATED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"));"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "fac45bb9-76ce-4e0b-b7a8-12201d204fbd",
+            "name": "No money or stock lost",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "_": {
+                    "lastExecutionId": "0a15295c-c7c7-4014-8a11-e9d8f690c08c"
+                  },
+                  "id": "d6d4fd2f-a438-4878-9499-89b0f7f255d2",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const stockDelta = {};",
+                    "const balanceDelta = {};",
+                    "const products = pm.response.json();",
+                    "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                    "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "55a1e97e-1283-4c4d-ad02-63bd86e158f5",
+            "name": "Inspect saga logs",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{extensionOrderId}}",
+                  "saga-logs"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "_": {
+                    "lastExecutionId": "f68ac1c8-e5fa-4687-bbb8-3e92efa87209"
+                  },
+                  "id": "a3d3e807-a480-44b5-ae58-f40ec48e5a45",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const logs = pm.response.json();",
+                    "pm.test(\"Compensation LIFO\", () => pm.expect(logs.filter(l => l.step === \"COMPENSATION\" && l.result === \"SUCCESS\").map(l => l.message.split(\" - \")[0])).to.eql([\"REFUND_PAYMENT\", \"RELEASE_INVENTORY\"]));"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "a9406c59-c2c0-46a3-a8a8-3c7cce131441",
+            "name": "Payment receipt shows refund",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "payments"
+                ],
+                "host": [
+                  "{{paymentUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "_": {
+                    "lastExecutionId": "faf6a503-1914-4edf-89ac-56161f781007"
+                  },
+                  "id": "329c55cc-dbfa-43bf-b743-2f6191ef8a7e",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const p = pm.response.json().find(p => p.orderId === Number(pm.collectionVariables.get(\"extensionOrderId\"))); pm.test(\"Committed payment REFUNDED\", () => pm.expect(p.status).to.eql(\"REFUNDED\"));"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "c744fffd-86ce-422c-a7ec-d2b460112c18",
+        "name": "EXT-5 - Outbox success",
+        "item": [
+          {
+            "id": "adc718b7-a27d-4f74-a100-50975c6d04ef",
+            "name": "Snapshot",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "bee5e9d6-f957-408b-9e74-ba655e63c744",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "32e800b4-4a24-42d8-8a2c-b741eee32d7f",
+            "name": "Submit async order",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "f12cf9ba-80ef-4e30-83c0-4a0436048d5a",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "d79ac3b4-7f1d-4530-a05c-117a78515b3f",
+            "name": "Wait for async completion",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "a9ac6de1-d5a4-4db5-b4cc-39544f526ded",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                    "function check(remaining) {",
+                    "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                    "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                    "    const order = response.json().find(o => o.id === id);",
+                    "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                    "      pm.test(\"Async order CONFIRMED\", () => pm.expect(order.status).to.eql(\"CONFIRMED\"));",
+                    "      pm.test(\"Async saga COMPLETED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPLETED\"));",
+                    "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                    "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                    "  });",
+                    "}",
+                    "check(100);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "6179f631-ef1d-4ef0-b355-aa73c5630b01",
+            "name": "Purchase applied once",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "16c6e4ba-1af5-4fbe-93b3-99f8042caced",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const stockDelta = {\"P2\": -1};",
+                    "const balanceDelta = {\"C1\": -20};",
+                    "const products = pm.response.json();",
+                    "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                    "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "ea9a1280-7a26-4f8c-8bfc-37e512d61c5e",
+            "name": "Inspect saga logs",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{extensionOrderId}}",
+                  "saga-logs"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "cb6d850f-fbf4-4bac-ac42-a8a70cee479c",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const logs = pm.response.json();"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "d22a1377-101e-4337-9ddf-7ed0f55fc712",
+        "name": "EXT-5 - Outbox payment failure",
+        "item": [
+          {
+            "id": "8114a350-2d34-44a2-a87e-2a7e240365fe",
+            "name": "Snapshot",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "86f0e4f5-422b-46a2-9213-2a15de429b61",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "6a653006-3c48-423e-8dd4-34ddf4633d22",
+            "name": "Reject insufficient balance",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\"customerId\": \"C2\", \"productId\": \"P1\", \"quantity\": 1, \"amount\": 1000}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "542b9d98-793a-4c41-8411-30c88d4e52e8",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "6833c036-e17c-4cb7-ab30-0e3432416846",
+            "name": "Wait for async completion",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "f5de4b64-ee67-4b0d-bf1b-ab53ca69f191",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                    "function check(remaining) {",
+                    "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                    "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                    "    const order = response.json().find(o => o.id === id);",
+                    "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                    "      pm.test(\"Async order CANCELLED\", () => pm.expect(order.status).to.eql(\"CANCELLED\"));",
+                    "      pm.test(\"Async saga COMPENSATED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPENSATED\"));",
+                    "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                    "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                    "  });",
+                    "}",
+                    "check(100);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "81ee90cd-ba93-4e9d-9d3b-397cadcd7cf8",
+            "name": "Compensation restores all resources",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "673ed98c-cdf0-4a00-af2e-c359c36c52fe",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const stockDelta = {};",
+                    "const balanceDelta = {};",
+                    "const products = pm.response.json();",
+                    "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                    "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "b0067132-ce70-476f-8965-95817f818efb",
+            "name": "Inspect saga logs",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{extensionOrderId}}",
+                  "saga-logs"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "aac8ff56-d67b-4279-b63b-a6e48e493f59",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const logs = pm.response.json();"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "45b5b766-12a2-41f8-a21f-8b9845e5ea72",
+        "name": "EXT-3 - Choreography success",
+        "item": [
+          {
+            "id": "e3088eb1-d9e1-4c54-b5e5-04f56061b983",
+            "name": "Snapshot",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "dde906df-3254-4e86-96f5-9e65f3381feb",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "b55bcefb-bdfb-40dc-9226-a08fcf50e5ad",
+            "name": "Submit async order",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "72a48392-5a45-4451-8362-0853306d144e",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "72a756e8-3dac-439d-a86f-8896dab8fa4a",
+            "name": "Wait for async completion",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "8d2e6854-d74c-427c-9174-c8271f77e696",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                    "function check(remaining) {",
+                    "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                    "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                    "    const order = response.json().find(o => o.id === id);",
+                    "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                    "      pm.test(\"Async order CONFIRMED\", () => pm.expect(order.status).to.eql(\"CONFIRMED\"));",
+                    "      pm.test(\"Async saga COMPLETED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPLETED\"));",
+                    "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                    "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                    "  });",
+                    "}",
+                    "check(100);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "98a95cc4-ea8a-4dd8-9eba-0c76104da0ec",
+            "name": "Purchase applied once",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "5bac2e93-dba9-42eb-8040-da03e5f63f81",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const stockDelta = {\"P2\": -1};",
+                    "const balanceDelta = {\"C1\": -20};",
+                    "const products = pm.response.json();",
+                    "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                    "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "01110c1e-3f82-4370-b6e9-23876f681c56",
+            "name": "Inspect saga logs",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{extensionOrderId}}",
+                  "saga-logs"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "99573159-2405-468b-896c-46d3d4c016e1",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const logs = pm.response.json();"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "855f5b85-f933-4fe8-837b-76c3b5a75bf5",
+        "name": "EXT-3 - Choreography payment failure",
+        "item": [
+          {
+            "id": "20100707-90f1-4934-b782-497558d668b1",
+            "name": "Snapshot",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "3646a6e1-7d49-476a-8869-436c91a4c56d",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "80b6d2ee-c7df-460a-9604-4f8c05754035",
+            "name": "Reject insufficient balance",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\"customerId\": \"C2\", \"productId\": \"P1\", \"quantity\": 1, \"amount\": 1000}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "81ba2d95-ea63-45b2-a421-617719e7a013",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "438e84b3-65a5-4bd3-a460-8fae2f351992",
+            "name": "Wait for async completion",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "71cd8ef8-fd11-4147-bd20-e5b399453932",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                    "function check(remaining) {",
+                    "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                    "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                    "    const order = response.json().find(o => o.id === id);",
+                    "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                    "      pm.test(\"Async order CANCELLED\", () => pm.expect(order.status).to.eql(\"CANCELLED\"));",
+                    "      pm.test(\"Async saga COMPENSATED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPENSATED\"));",
+                    "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                    "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                    "  });",
+                    "}",
+                    "check(100);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "dc99176e-06bf-4901-b27a-57a6620ecb4b",
+            "name": "Compensation restores all resources",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "cc9359e6-185a-4987-88bd-9393aef77235",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const stockDelta = {};",
+                    "const balanceDelta = {};",
+                    "const products = pm.response.json();",
+                    "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                    "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "75fd1ee8-b5d9-4422-93ee-299aa6ee2cd3",
+            "name": "Inspect saga logs",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{extensionOrderId}}",
+                  "saga-logs"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "62bb738a-b7b3-4cc5-895c-32d7b44e70bb",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const logs = pm.response.json();"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "d23a0656-7212-42dd-b338-60fc498f13a8",
+        "name": "EXT-5 - Queue before restart",
+        "item": [
+          {
+            "id": "f49ffb80-c44f-46c1-aaac-042b0cb94306",
+            "name": "Snapshot",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "6002fb4e-a1e6-40e7-8fe0-aa87a8c8012c",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "60cf70c3-a20a-4fe1-9667-bba218fceec6",
+            "name": "Durably queue order",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\"customerId\": \"C1\", \"productId\": \"P2\", \"quantity\": 1, \"amount\": 20}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "21586263-9a6b-4884-be07-020ef2004918",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "22a2d570-c117-479d-8716-382257d4a051",
+            "name": "Inspect durable RESERVE command",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{extensionOrderId}}",
+                  "outbox"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "5f3c1bd2-40ab-4514-b5d1-e354dd6362ce",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const c = pm.response.json(); pm.test(\"One queued command\", () => pm.expect(c).to.have.length(1)); pm.test(\"RESERVE persists pending\", () => { pm.expect(c[0].command).to.eql(\"RESERVE\"); pm.expect(c[0].state).to.eql(\"PENDING\"); });"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "b191661e-f01b-4009-ab28-642891a20050",
+        "name": "EXT-5 - Resume after restart",
+        "item": [
+          {
+            "id": "a0434bc9-9a85-410e-962d-a14a0d52a3af",
+            "name": "Wait for async completion",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "9a44a033-2d1f-4240-b777-67d09789bc82",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "const id = Number(pm.collectionVariables.get(\"extensionOrderId\"));",
+                    "function check(remaining) {",
+                    "  pm.sendRequest(pm.collectionVariables.get(\"orderUrl\") + \"/api/orders\", (err, response) => {",
+                    "    if (err) { pm.test(\"Polling transport succeeds\", () => pm.expect(err).to.be.null); return; }",
+                    "    const order = response.json().find(o => o.id === id);",
+                    "    if (order && [\"COMPLETED\", \"COMPENSATED\"].includes(order.sagaStatus)) {",
+                    "      pm.test(\"Async order CONFIRMED\", () => pm.expect(order.status).to.eql(\"CONFIRMED\"));",
+                    "      pm.test(\"Async saga COMPLETED\", () => pm.expect(order.sagaStatus).to.eql(\"COMPLETED\"));",
+                    "    } else if (remaining > 0) { setTimeout(() => check(remaining - 1), 250); }",
+                    "    else { pm.test(\"Saga reaches a terminal state\", () => pm.expect.fail(JSON.stringify(order))); }",
+                    "  });",
+                    "}",
+                    "check(100);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "104f36d3-de45-40de-9f9d-1f8b99382f50",
+            "name": "Purchase completed exactly once",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "fcaee1c9-6099-4502-b540-abad2f0eedc1",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const stockDelta = {\"P2\": -1};",
+                    "const balanceDelta = {\"C1\": -20};",
+                    "const products = pm.response.json();",
+                    "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                    "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                    "});"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "6c1c8408-9c03-400b-980c-da3b855d44ed",
+            "name": "All commands delivered",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{extensionOrderId}}",
+                  "outbox"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "b4771624-02fc-403f-b883-47688eccb8c4",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const c = pm.response.json(); pm.test(\"RESERVE PAY CONFIRM delivered\", () => pm.expect(c.map(c => c.command)).to.eql([\"RESERVE\", \"PAY\", \"CONFIRM\"])); pm.test(\"All commands DONE\", () => c.forEach(c => pm.expect(c.state).to.eql(\"DONE\")));"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "3a1c6b8e-a016-44e4-aac8-cbf9ad1294e2",
+        "name": "EXT-6 - HTTP interfaces",
+        "item": [
+          {
+            "id": "56234942-6a34-40d0-a57d-0b128f9da6eb",
+            "name": "Snapshot",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "5fb7c75d-010c-4808-aa26-81485b2db529",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "",
+                    "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                    "});"
+                  ],
+                  "_lastExecutionId": "df8a622f-3378-4952-a873-81271105d723"
+                }
+              }
+            ]
+          },
+          {
+            "id": "07455120-e081-495f-9aec-cc42846c1199",
+            "name": "Interface payment rejection",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\"customerId\": \"C2\", \"productId\": \"P1\", \"quantity\": 1, \"amount\": 1000}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "7ae48bda-c45e-407b-9d8e-96a6817967e4",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                    "pm.test(\"Order CANCELLED\", () => pm.expect(o.status).to.eql(\"CANCELLED\"));",
+                    "pm.test(\"Saga COMPENSATED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"));"
+                  ],
+                  "_lastExecutionId": "245fa777-914e-4402-80df-7b7300f9baf8"
+                }
+              }
+            ]
+          },
+          {
+            "id": "f6545cda-8497-4572-a545-92e4f0f14f4a",
+            "name": "Proxy compensation works",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "inventory",
+                  "products"
+                ],
+                "host": [
+                  "{{inventoryUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "d3a3136c-40b9-462b-b522-1e583601b97f",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const stockDelta = {};",
+                    "const balanceDelta = {};",
+                    "const products = pm.response.json();",
+                    "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                    "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                    "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                    "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                    "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                    "});"
+                  ],
+                  "_lastExecutionId": "83b18150-b575-4c47-a5de-0e6fe1ed2d56"
+                }
+              }
+            ]
+          },
+          {
+            "id": "9ed03050-41cf-47bd-9e75-0416a973c2cb",
+            "name": "Inspect saga logs",
+            "request": {
+              "url": {
+                "path": [
+                  "api",
+                  "orders",
+                  "{{extensionOrderId}}",
+                  "saga-logs"
+                ],
+                "host": [
+                  "{{orderUrl}}"
+                ],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "d293d121-10b3-45b7-8f95-5e624ce1ee1d",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                    "const logs = pm.response.json();",
+                    "pm.test(\"Exact execution sequence\", () => pm.expect(logs.map(l => l.step)).to.eql([\"CREATE_ORDER\", \"RESERVE_INVENTORY\", \"SAGA\", \"COMPENSATION\", \"CANCEL_ORDER\"]));"
+                  ],
+                  "_lastExecutionId": "3348e7c8-1e26-47b6-b6cd-1cb2235df922"
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      }
+    ],
+    "event": [],
+    "variable": [
+      {
+        "type": "any",
+        "value": "http://localhost:8081",
+        "key": "orderUrl"
+      },
+      {
+        "type": "any",
+        "value": "http://localhost:8082",
+        "key": "inventoryUrl"
+      },
+      {
+        "type": "any",
+        "value": "http://localhost:8083",
+        "key": "paymentUrl"
+      },
+      {
+        "type": "any",
+        "value": "http://localhost:8084",
+        "key": "shippingUrl"
+      },
+      {
+        "type": "any",
+        "value": "7",
+        "key": "recoveryOrderId"
+      }
+    ],
+    "info": {
+      "_postman_id": "5d44ffb6-71b9-4bd0-b4d4-8ff0bc4438b7",
+      "name": "MSS301 - Saga Extensions",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+      "description": {
+        "content": "Run one folder with its matching Compose override. scripts/run-extensions.cjs switches profiles and executes the complete suite. Do not run the entire collection against one profile.",
+        "type": "text/plain"
+      }
+    }
+  },
+  "environment": {
+    "id": "9bbba740-64ec-4283-846b-23a4e43144c3",
+    "values": []
+  },
+  "globals": {
+    "id": "a2af59cd-c6e0-4b2d-98e1-91c5e84b34d2",
+    "values": []
+  },
+  "run": {
+    "stats": {
+      "iterations": {
+        "total": 1,
+        "pending": 0,
+        "failed": 0
+      },
+      "items": {
+        "total": 4,
+        "pending": 0,
+        "failed": 0
+      },
+      "scripts": {
+        "total": 4,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequests": {
+        "total": 4,
+        "pending": 0,
+        "failed": 0
+      },
+      "requests": {
+        "total": 6,
+        "pending": 0,
+        "failed": 0
+      },
+      "tests": {
+        "total": 4,
+        "pending": 0,
+        "failed": 0
+      },
+      "assertions": {
+        "total": 14,
+        "pending": 0,
+        "failed": 0
+      },
+      "testScripts": {
+        "total": 4,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequestScripts": {
+        "total": 0,
+        "pending": 0,
+        "failed": 0
+      }
+    },
+    "timings": {
+      "responseAverage": 146.16666666666666,
+      "responseMin": 8,
+      "responseMax": 488,
+      "responseSd": 189.26561288892978,
+      "dnsAverage": 0,
+      "dnsMin": 0,
+      "dnsMax": 0,
+      "dnsSd": 0,
+      "firstByteAverage": 0,
+      "firstByteMin": 0,
+      "firstByteMax": 0,
+      "firstByteSd": 0,
+      "started": 1792671057835,
+      "completed": 1792671059077
+    },
+    "executions": [
+      {
+        "cursor": {
+          "position": 0,
+          "iteration": 0,
+          "length": 4,
+          "cycles": 1,
+          "empty": false,
+          "eof": false,
+          "bof": true,
+          "cr": false,
+          "ref": "a0a80a52-33a7-4ce5-bd55-ccdae1848c53",
+          "httpRequestId": "e684f89a-b7a8-4bbb-a0f6-6cce79c62f35",
+          "scriptId": "5fb7c75d-010c-4808-aa26-81485b2db529",
+          "execution": "df8a622f-3378-4952-a873-81271105d723"
+        },
+        "item": {
+          "id": "56234942-6a34-40d0-a57d-0b128f9da6eb",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "5fb7c75d-010c-4808-aa26-81485b2db529",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ],
+                "_lastExecutionId": "df8a622f-3378-4952-a873-81271105d723"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8083",
+            "path": [
+              "api",
+              "payments",
+              "wallets"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "e14faf4d-6664-4d00-8dc4-a5b08e361496",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8083",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "2f157ac2-0bf4-4541-8115-ecd28ab49a74",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "74"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 22 Oct 2026 12:10:57 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              91,
+              123,
+              34,
+              99,
+              117,
+              115,
+              116,
+              111,
+              109,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              34,
+              67,
+              49,
+              34,
+              44,
+              34,
+              98,
+              97,
+              108,
+              97,
+              110,
+              99,
+              101,
+              34,
+              58,
+              50,
+              57,
+              56,
+              48,
+              46,
+              48,
+              125,
+              44,
+              123,
+              34,
+              99,
+              117,
+              115,
+              116,
+              111,
+              109,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              34,
+              67,
+              50,
+              34,
+              44,
+              34,
+              98,
+              97,
+              108,
+              97,
+              110,
+              99,
+              101,
+              34,
+              58,
+              49,
+              48,
+              48,
+              46,
+              48,
+              125,
+              93
+            ]
+          },
+          "cookie": [],
+          "responseTime": 18,
+          "responseSize": 74
+        },
+        "id": "fa7fd453-ac81-4822-8b14-d9e0da30604c",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Wallet snapshot request succeeds",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "position": 0,
+          "iteration": 0,
+          "length": 4,
+          "cycles": 1,
+          "empty": false,
+          "eof": false,
+          "bof": true,
+          "cr": false,
+          "ref": "a0a80a52-33a7-4ce5-bd55-ccdae1848c53",
+          "httpRequestId": "e684f89a-b7a8-4bbb-a0f6-6cce79c62f35",
+          "scriptId": "5fb7c75d-010c-4808-aa26-81485b2db529",
+          "execution": "df8a622f-3378-4952-a873-81271105d723"
+        },
+        "item": {
+          "id": "56234942-6a34-40d0-a57d-0b128f9da6eb",
+          "name": "Snapshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "5fb7c75d-010c-4808-aa26-81485b2db529",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.response.json().forEach(p => pm.collectionVariables.set(\"stock_\" + p.id, p.stock));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet snapshot request succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.collectionVariables.set(\"bal_\" + w.customerId, w.balance));",
+                  "});"
+                ],
+                "_lastExecutionId": "df8a622f-3378-4952-a873-81271105d723"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8083",
+            "path": [
+              "api",
+              "payments",
+              "wallets"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "e14faf4d-6664-4d00-8dc4-a5b08e361496",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8083",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "2f157ac2-0bf4-4541-8115-ecd28ab49a74",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "74"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 22 Oct 2026 12:10:57 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              91,
+              123,
+              34,
+              99,
+              117,
+              115,
+              116,
+              111,
+              109,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              34,
+              67,
+              49,
+              34,
+              44,
+              34,
+              98,
+              97,
+              108,
+              97,
+              110,
+              99,
+              101,
+              34,
+              58,
+              50,
+              57,
+              56,
+              48,
+              46,
+              48,
+              125,
+              44,
+              123,
+              34,
+              99,
+              117,
+              115,
+              116,
+              111,
+              109,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              34,
+              67,
+              50,
+              34,
+              44,
+              34,
+              98,
+              97,
+              108,
+              97,
+              110,
+              99,
+              101,
+              34,
+              58,
+              49,
+              48,
+              48,
+              46,
+              48,
+              125,
+              93
+            ]
+          },
+          "cookie": [],
+          "responseTime": 18,
+          "responseSize": 74
+        },
+        "id": "fa7fd453-ac81-4822-8b14-d9e0da30604c",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Wallet snapshot request succeeds",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "6299a73a-fc3c-4241-8eba-267fcf6b9b28",
+          "length": 4,
+          "cycles": 1,
+          "position": 1,
+          "iteration": 0,
+          "httpRequestId": "8da9b45a-1355-428e-ae92-c30496afe155"
+        },
+        "item": {
+          "id": "07455120-e081-495f-9aec-cc42846c1199",
+          "name": "Interface payment rejection",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerId\": \"C2\", \"productId\": \"P1\", \"quantity\": 1, \"amount\": 1000}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "7ae48bda-c45e-407b-9d8e-96a6817967e4",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json(); pm.collectionVariables.set(\"extensionOrderId\", o.id);",
+                  "pm.test(\"Order CANCELLED\", () => pm.expect(o.status).to.eql(\"CANCELLED\"));",
+                  "pm.test(\"Saga COMPENSATED\", () => pm.expect(o.sagaStatus).to.eql(\"COMPENSATED\"));"
+                ],
+                "_lastExecutionId": "245fa777-914e-4402-80df-7b7300f9baf8"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8081",
+            "path": [
+              "api",
+              "orders"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "784bf7d9-6e57-43d4-9337-29e4028fb752",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8081",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "70",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\"customerId\": \"C2\", \"productId\": \"P1\", \"quantity\": 1, \"amount\": 1000}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "f88cc366-4ab7-43ad-a671-5a1fab32f470",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "193"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 22 Oct 2026 12:10:58 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              97,
+              109,
+              111,
+              117,
+              110,
+              116,
+              34,
+              58,
+              49,
+              48,
+              48,
+              48,
+              46,
+              48,
+              44,
+              34,
+              99,
+              117,
+              115,
+              116,
+              111,
+              109,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              34,
+              67,
+              50,
+              34,
+              44,
+              34,
+              102,
+              97,
+              105,
+              108,
+              117,
+              114,
+              101,
+              82,
+              101,
+              97,
+              115,
+              111,
+              110,
+              34,
+              58,
+              34,
+              52,
+              48,
+              50,
+              32,
+              45,
+              32,
+              83,
+              225,
+              187,
+              145,
+              32,
+              100,
+              198,
+              176,
+              32,
+              107,
+              104,
+              195,
+              180,
+              110,
+              103,
+              32,
+              196,
+              145,
+              225,
+              187,
+              167,
+              58,
+              32,
+              99,
+              195,
+              178,
+              110,
+              32,
+              49,
+              48,
+              48,
+              46,
+              48,
+              44,
+              32,
+              99,
+              225,
+              186,
+              167,
+              110,
+              32,
+              49,
+              48,
+              48,
+              48,
+              46,
+              48,
+              34,
+              44,
+              34,
+              105,
+              100,
+              34,
+              58,
+              49,
+              50,
+              44,
+              34,
+              112,
+              114,
+              111,
+              100,
+              117,
+              99,
+              116,
+              73,
+              100,
+              34,
+              58,
+              34,
+              80,
+              49,
+              34,
+              44,
+              34,
+              113,
+              117,
+              97,
+              110,
+              116,
+              105,
+              116,
+              121,
+              34,
+              58,
+              49,
+              44,
+              34,
+              115,
+              97,
+              103,
+              97,
+              83,
+              116,
+              97,
+              116,
+              117,
+              115,
+              34,
+              58,
+              34,
+              67,
+              79,
+              77,
+              80,
+              69,
+              78,
+              83,
+              65,
+              84,
+              69,
+              68,
+              34,
+              44,
+              34,
+              115,
+              116,
+              97,
+              116,
+              117,
+              115,
+              34,
+              58,
+              34,
+              67,
+              65,
+              78,
+              67,
+              69,
+              76,
+              76,
+              69,
+              68,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 488,
+          "responseSize": 193
+        },
+        "id": "07455120-e081-495f-9aec-cc42846c1199",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Order CANCELLED",
+            "skipped": false
+          },
+          {
+            "assertion": "Saga COMPENSATED",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "eba7d483-7035-4bab-b749-393f9acccd66",
+          "length": 4,
+          "cycles": 1,
+          "position": 2,
+          "iteration": 0,
+          "httpRequestId": "9f18fde4-809c-4524-841d-e315bd4c2371",
+          "scriptId": "d3a3136c-40b9-462b-b522-1e583601b97f",
+          "execution": "83b18150-b575-4c47-a5de-0e6fe1ed2d56"
+        },
+        "item": {
+          "id": "f6545cda-8497-4572-a545-92e4f0f14f4a",
+          "name": "Proxy compensation works",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d3a3136c-40b9-462b-b522-1e583601b97f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ],
+                "_lastExecutionId": "83b18150-b575-4c47-a5de-0e6fe1ed2d56"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8083",
+            "path": [
+              "api",
+              "payments",
+              "wallets"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "dec2396c-2f1e-4a28-8a16-5c470e7c0d11",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8083",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "f777c8e0-9387-46eb-8c2a-628b08714737",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "74"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 22 Oct 2026 12:10:58 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              91,
+              123,
+              34,
+              99,
+              117,
+              115,
+              116,
+              111,
+              109,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              34,
+              67,
+              49,
+              34,
+              44,
+              34,
+              98,
+              97,
+              108,
+              97,
+              110,
+              99,
+              101,
+              34,
+              58,
+              50,
+              57,
+              56,
+              48,
+              46,
+              48,
+              125,
+              44,
+              123,
+              34,
+              99,
+              117,
+              115,
+              116,
+              111,
+              109,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              34,
+              67,
+              50,
+              34,
+              44,
+              34,
+              98,
+              97,
+              108,
+              97,
+              110,
+              99,
+              101,
+              34,
+              58,
+              49,
+              48,
+              48,
+              46,
+              48,
+              125,
+              93
+            ]
+          },
+          "cookie": [],
+          "responseTime": 15,
+          "responseSize": 74
+        },
+        "id": "d64d301c-ad90-4dc6-b147-2a261d7af898",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Both products exist",
+            "skipped": false
+          },
+          {
+            "assertion": "Stock delta P1",
+            "skipped": false
+          },
+          {
+            "assertion": "Stock delta P2",
+            "skipped": false
+          },
+          {
+            "assertion": "Wallet verification succeeds",
+            "skipped": false
+          },
+          {
+            "assertion": "Balance delta C1",
+            "skipped": false
+          },
+          {
+            "assertion": "Balance delta C2",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "eba7d483-7035-4bab-b749-393f9acccd66",
+          "length": 4,
+          "cycles": 1,
+          "position": 2,
+          "iteration": 0,
+          "httpRequestId": "9f18fde4-809c-4524-841d-e315bd4c2371",
+          "scriptId": "d3a3136c-40b9-462b-b522-1e583601b97f",
+          "execution": "83b18150-b575-4c47-a5de-0e6fe1ed2d56"
+        },
+        "item": {
+          "id": "f6545cda-8497-4572-a545-92e4f0f14f4a",
+          "name": "Proxy compensation works",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "inventory",
+                "products"
+              ],
+              "host": [
+                "{{inventoryUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d3a3136c-40b9-462b-b522-1e583601b97f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const stockDelta = {};",
+                  "const balanceDelta = {};",
+                  "const products = pm.response.json();",
+                  "pm.test(\"Both products exist\", () => pm.expect(products.map(p => p.id).sort()).to.eql([\"P1\", \"P2\"]));",
+                  "products.forEach(p => pm.test(\"Stock delta \" + p.id, () => pm.expect(p.stock).to.eql(Number(pm.collectionVariables.get(\"stock_\" + p.id)) + (stockDelta[p.id] || 0))));",
+                  "pm.sendRequest(pm.collectionVariables.get(\"paymentUrl\") + \"/api/payments/wallets\", (err, res) => {",
+                  "  pm.test(\"Wallet verification succeeds\", () => { pm.expect(err).to.be.null; pm.expect(res.code).to.eql(200); });",
+                  "  if (!err && res.code === 200) res.json().forEach(w => pm.test(\"Balance delta \" + w.customerId, () => pm.expect(w.balance).to.eql(Number(pm.collectionVariables.get(\"bal_\" + w.customerId)) + (balanceDelta[w.customerId] || 0))));",
+                  "});"
+                ],
+                "_lastExecutionId": "83b18150-b575-4c47-a5de-0e6fe1ed2d56"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8083",
+            "path": [
+              "api",
+              "payments",
+              "wallets"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "dec2396c-2f1e-4a28-8a16-5c470e7c0d11",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8083",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "f777c8e0-9387-46eb-8c2a-628b08714737",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "74"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 22 Oct 2026 12:10:58 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              91,
+              123,
+              34,
+              99,
+              117,
+              115,
+              116,
+              111,
+              109,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              34,
+              67,
+              49,
+              34,
+              44,
+              34,
+              98,
+              97,
+              108,
+              97,
+              110,
+              99,
+              101,
+              34,
+              58,
+              50,
+              57,
+              56,
+              48,
+              46,
+              48,
+              125,
+              44,
+              123,
+              34,
+              99,
+              117,
+              115,
+              116,
+              111,
+              109,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              34,
+              67,
+              50,
+              34,
+              44,
+              34,
+              98,
+              97,
+              108,
+              97,
+              110,
+              99,
+              101,
+              34,
+              58,
+              49,
+              48,
+              48,
+              46,
+              48,
+              125,
+              93
+            ]
+          },
+          "cookie": [],
+          "responseTime": 15,
+          "responseSize": 74
+        },
+        "id": "d64d301c-ad90-4dc6-b147-2a261d7af898",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Both products exist",
+            "skipped": false
+          },
+          {
+            "assertion": "Stock delta P1",
+            "skipped": false
+          },
+          {
+            "assertion": "Stock delta P2",
+            "skipped": false
+          },
+          {
+            "assertion": "Wallet verification succeeds",
+            "skipped": false
+          },
+          {
+            "assertion": "Balance delta C1",
+            "skipped": false
+          },
+          {
+            "assertion": "Balance delta C2",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "ed4354b2-737b-4871-893b-49062922b773",
+          "length": 4,
+          "cycles": 1,
+          "position": 3,
+          "iteration": 0,
+          "httpRequestId": "60b98b5a-6c0c-406f-8fd1-2cd3ae513dd8"
+        },
+        "item": {
+          "id": "9ed03050-41cf-47bd-9e75-0416a973c2cb",
+          "name": "Inspect saga logs",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "orders",
+                "{{extensionOrderId}}",
+                "saga-logs"
+              ],
+              "host": [
+                "{{orderUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d293d121-10b3-45b7-8f95-5e624ce1ee1d",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const logs = pm.response.json();",
+                  "pm.test(\"Exact execution sequence\", () => pm.expect(logs.map(l => l.step)).to.eql([\"CREATE_ORDER\", \"RESERVE_INVENTORY\", \"SAGA\", \"COMPENSATION\", \"CANCEL_ORDER\"]));"
+                ],
+                "_lastExecutionId": "3348e7c8-1e26-47b6-b6cd-1cb2235df922"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8081",
+            "path": [
+              "api",
+              "orders",
+              "12",
+              "saga-logs"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "33e62f82-9df4-4d5f-bb2f-ad857924314c",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8081",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "7ce764c2-f898-491e-81c6-addae328f5b1",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "688"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 22 Oct 2026 12:10:59 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              91,
+              123,
+              34,
+              111,
+              114,
+              100,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              49,
+              50,
+              44,
+              34,
+              115,
+              116,
+              101,
+              112,
+              34,
+              58,
+              34,
+              67,
+              82,
+              69,
+              65,
+              84,
+              69,
+              95,
+              79,
+              82,
+              68,
+              69,
+              82,
+              34,
+              44,
+              34,
+              114,
+              101,
+              115,
+              117,
+              108,
+              116,
+              34,
+              58,
+              34,
+              83,
+              85,
+              67,
+              67,
+              69,
+              83,
+              83,
+              34,
+              44,
+              34,
+              109,
+              101,
+              115,
+              115,
+              97,
+              103,
+              101,
+              34,
+              58,
+              34,
+              79,
+              114,
+              100,
+              101,
+              114,
+              32,
+              80,
+              69,
+              78,
+              68,
+              73,
+              78,
+              71,
+              34,
+              44,
+              34,
+              105,
+              100,
+              34,
+              58,
+              54,
+              48,
+              44,
+              34,
+              116,
+              105,
+              109,
+              101,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              50,
+              84,
+              49,
+              50,
+              58,
+              49,
+              48,
+              58,
+              53,
+              56,
+              46,
+              49,
+              52,
+              57,
+              50,
+              56,
+              57,
+              34,
+              125,
+              44,
+              123,
+              34,
+              111,
+              114,
+              100,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              49,
+              50,
+              44,
+              34,
+              115,
+              116,
+              101,
+              112,
+              34,
+              58,
+              34,
+              82,
+              69,
+              83,
+              69,
+              82,
+              86,
+              69,
+              95,
+              73,
+              78,
+              86,
+              69,
+              78,
+              84,
+              79,
+              82,
+              89,
+              34,
+              44,
+              34,
+              114,
+              101,
+              115,
+              117,
+              108,
+              116,
+              34,
+              58,
+              34,
+              83,
+              85,
+              67,
+              67,
+              69,
+              83,
+              83,
+              34,
+              44,
+              34,
+              109,
+              101,
+              115,
+              115,
+              97,
+              103,
+              101,
+              34,
+              58,
+              34,
+              196,
+              144,
+              195,
+              163,
+              32,
+              103,
+              105,
+              225,
+              187,
+              175,
+              32,
+              49,
+              32,
+              80,
+              49,
+              34,
+              44,
+              34,
+              105,
+              100,
+              34,
+              58,
+              54,
+              49,
+              44,
+              34,
+              116,
+              105,
+              109,
+              101,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              50,
+              84,
+              49,
+              50,
+              58,
+              49,
+              48,
+              58,
+              53,
+              56,
+              46,
+              50,
+              57,
+              52,
+              55,
+              57,
+              56,
+              34,
+              125,
+              44,
+              123,
+              34,
+              111,
+              114,
+              100,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              49,
+              50,
+              44,
+              34,
+              115,
+              116,
+              101,
+              112,
+              34,
+              58,
+              34,
+              83,
+              65,
+              71,
+              65,
+              34,
+              44,
+              34,
+              114,
+              101,
+              115,
+              117,
+              108,
+              116,
+              34,
+              58,
+              34,
+              70,
+              65,
+              73,
+              76,
+              69,
+              68,
+              34,
+              44,
+              34,
+              109,
+              101,
+              115,
+              115,
+              97,
+              103,
+              101,
+              34,
+              58,
+              34,
+              52,
+              48,
+              50,
+              32,
+              45,
+              32,
+              83,
+              225,
+              187,
+              145,
+              32,
+              100,
+              198,
+              176,
+              32,
+              107,
+              104,
+              195,
+              180,
+              110,
+              103,
+              32,
+              196,
+              145,
+              225,
+              187,
+              167,
+              58,
+              32,
+              99,
+              195,
+              178,
+              110,
+              32,
+              49,
+              48,
+              48,
+              46,
+              48,
+              44,
+              32,
+              99,
+              225,
+              186,
+              167,
+              110,
+              32,
+              49,
+              48,
+              48,
+              48,
+              46,
+              48,
+              34,
+              44,
+              34,
+              105,
+              100,
+              34,
+              58,
+              54,
+              50,
+              44,
+              34,
+              116,
+              105,
+              109,
+              101,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              50,
+              84,
+              49,
+              50,
+              58,
+              49,
+              48,
+              58,
+              53,
+              56,
+              46,
+              52,
+              52,
+              50,
+              49,
+              52,
+              50,
+              34,
+              125,
+              44,
+              123,
+              34,
+              111,
+              114,
+              100,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              49,
+              50,
+              44,
+              34,
+              115,
+              116,
+              101,
+              112,
+              34,
+              58,
+              34,
+              67,
+              79,
+              77,
+              80,
+              69,
+              78,
+              83,
+              65,
+              84,
+              73,
+              79,
+              78,
+              34,
+              44,
+              34,
+              114,
+              101,
+              115,
+              117,
+              108,
+              116,
+              34,
+              58,
+              34,
+              83,
+              85,
+              67,
+              67,
+              69,
+              83,
+              83,
+              34,
+              44,
+              34,
+              109,
+              101,
+              115,
+              115,
+              97,
+              103,
+              101,
+              34,
+              58,
+              34,
+              82,
+              69,
+              76,
+              69,
+              65,
+              83,
+              69,
+              95,
+              73,
+              78,
+              86,
+              69,
+              78,
+              84,
+              79,
+              82,
+              89,
+              32,
+              45,
+              32,
+              97,
+              116,
+              116,
+              101,
+              109,
+              112,
+              116,
+              32,
+              49,
+              34,
+              44,
+              34,
+              105,
+              100,
+              34,
+              58,
+              54,
+              51,
+              44,
+              34,
+              116,
+              105,
+              109,
+              101,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              50,
+              84,
+              49,
+              50,
+              58,
+              49,
+              48,
+              58,
+              53,
+              56,
+              46,
+              52,
+              57,
+              52,
+              57,
+              54,
+              57,
+              34,
+              125,
+              44,
+              123,
+              34,
+              111,
+              114,
+              100,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              49,
+              50,
+              44,
+              34,
+              115,
+              116,
+              101,
+              112,
+              34,
+              58,
+              34,
+              67,
+              65,
+              78,
+              67,
+              69,
+              76,
+              95,
+              79,
+              82,
+              68,
+              69,
+              82,
+              34,
+              44,
+              34,
+              114,
+              101,
+              115,
+              117,
+              108,
+              116,
+              34,
+              58,
+              34,
+              83,
+              85,
+              67,
+              67,
+              69,
+              83,
+              83,
+              34,
+              44,
+              34,
+              109,
+              101,
+              115,
+              115,
+              97,
+              103,
+              101,
+              34,
+              58,
+              34,
+              83,
+              97,
+              103,
+              97,
+              32,
+              67,
+              79,
+              77,
+              80,
+              69,
+              78,
+              83,
+              65,
+              84,
+              69,
+              68,
+              34,
+              44,
+              34,
+              105,
+              100,
+              34,
+              58,
+              54,
+              52,
+              44,
+              34,
+              116,
+              105,
+              109,
+              101,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              50,
+              84,
+              49,
+              50,
+              58,
+              49,
+              48,
+              58,
+              53,
+              56,
+              46,
+              53,
+              49,
+              55,
+              56,
+              52,
+              49,
+              34,
+              125,
+              93
+            ]
+          },
+          "cookie": [],
+          "responseTime": 322,
+          "responseSize": 688
+        },
+        "id": "9ed03050-41cf-47bd-9e75-0416a973c2cb",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Exact execution sequence",
+            "skipped": false
+          }
+        ]
+      }
+    ],
+    "transfers": {
+      "responseTotal": 1237
+    },
+    "failures": [],
+    "error": null
+  }
+}

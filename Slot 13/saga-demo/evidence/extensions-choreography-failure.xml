@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="MSS301 - Saga Extensions" tests="5" time="0.097">
+  <testsuite name="EXT-3 - Choreography payment failure / Snapshot" id="20100707-90f1-4934-b782-497558d668b1" timestamp="2026-10-22T12:18:31.562Z" tests="2" failures="0" errors="0" time="0.013">
+    <testcase name="HTTP 200" time="0.013" classname="Ext3ChoreographyPaymentFailureSnapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.013" classname="Ext3ChoreographyPaymentFailureSnapshot"/>
+  </testsuite>
+  <testsuite name="EXT-3 - Choreography payment failure / Reject insufficient balance" id="80b6d2ee-c7df-460a-9604-4f8c05754035" timestamp="2026-10-22T12:18:31.562Z" tests="1" failures="0" errors="0" time="0.054">
+    <testcase name="HTTP 200" time="0.054" classname="Ext3ChoreographyPaymentFailureRejectInsufficientBalance"/>
+  </testsuite>
+  <testsuite name="EXT-3 - Choreography payment failure / Wait for async completion" id="438e84b3-65a5-4bd3-a460-8fae2f351992" timestamp="2026-10-22T12:18:31.562Z" tests="3" failures="0" errors="0" time="0.011">
+    <testcase name="HTTP 200" time="0.011" classname="Ext3ChoreographyPaymentFailureWaitForAsyncCompletion"/>
+    <testcase name="Async order CANCELLED" time="0.011" classname="Ext3ChoreographyPaymentFailureWaitForAsyncCompletion"/>
+    <testcase name="Async saga COMPENSATED" time="0.011" classname="Ext3ChoreographyPaymentFailureWaitForAsyncCompletion"/>
+  </testsuite>
+  <testsuite name="EXT-3 - Choreography payment failure / Compensation restores all resources" id="dc99176e-06bf-4901-b27a-57a6620ecb4b" timestamp="2026-10-22T12:18:31.562Z" tests="7" failures="0" errors="0" time="0.010">
+    <testcase name="HTTP 200" time="0.010" classname="Ext3ChoreographyPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Both products exist" time="0.010" classname="Ext3ChoreographyPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Stock delta P1" time="0.010" classname="Ext3ChoreographyPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Stock delta P2" time="0.010" classname="Ext3ChoreographyPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Wallet verification succeeds" time="0.010" classname="Ext3ChoreographyPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Balance delta C1" time="0.010" classname="Ext3ChoreographyPaymentFailureCompensationRestoresAllResources"/>
+    <testcase name="Balance delta C2" time="0.010" classname="Ext3ChoreographyPaymentFailureCompensationRestoresAllResources"/>
+  </testsuite>
+  <testsuite name="EXT-3 - Choreography payment failure / Inspect saga logs" id="75fd1ee8-b5d9-4422-93ee-299aa6ee2cd3" timestamp="2026-10-22T12:18:31.562Z" tests="1" failures="0" errors="0" time="0.009">
+    <testcase name="HTTP 200" time="0.009" classname="Ext3ChoreographyPaymentFailureInspectSagaLogs"/>
+  </testsuite>
+</testsuites>

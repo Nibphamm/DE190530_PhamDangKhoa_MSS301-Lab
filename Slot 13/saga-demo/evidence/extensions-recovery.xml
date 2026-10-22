@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="MSS301 - Saga Extensions" tests="5" time="0.561">
+  <testsuite name="EXT-4 - Recover KB8 / Snapshot" id="6b20e65b-0a52-4984-9ead-e47b425e9e59" timestamp="2026-10-22T12:03:44.505Z" tests="2" failures="0" errors="0" time="0.014">
+    <testcase name="HTTP 200" time="0.014" classname="Ext4RecoverKb8Snapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.014" classname="Ext4RecoverKb8Snapshot"/>
+  </testsuite>
+  <testsuite name="EXT-4 - Recover KB8 / Recover KB8" id="6c234f53-7848-439f-903a-2ec24208c97d" timestamp="2026-10-22T12:03:44.505Z" tests="2" failures="0" errors="0" time="0.276">
+    <testcase name="HTTP 200" time="0.276" classname="Ext4RecoverKb8RecoverKb8"/>
+    <testcase name="Recovered CANCELLED/COMPENSATED" time="0.276" classname="Ext4RecoverKb8RecoverKb8"/>
+  </testsuite>
+  <testsuite name="EXT-4 - Recover KB8 / Repeat recovery safely" id="c8916ade-bec1-41e8-a257-39bf2a013f7b" timestamp="2026-10-22T12:03:44.505Z" tests="2" failures="0" errors="0" time="0.009">
+    <testcase name="HTTP 200" time="0.009" classname="Ext4RecoverKb8RepeatRecoverySafely"/>
+    <testcase name="Already compensated" time="0.009" classname="Ext4RecoverKb8RepeatRecoverySafely"/>
+  </testsuite>
+  <testsuite name="EXT-4 - Recover KB8 / Stock restored once; no debit" id="2c8a4052-3a80-42b8-816e-c5d66a823bc5" timestamp="2026-10-22T12:03:44.505Z" tests="7" failures="0" errors="0" time="0.011">
+    <testcase name="HTTP 200" time="0.011" classname="Ext4RecoverKb8StockRestoredOnceNoDebit"/>
+    <testcase name="Both products exist" time="0.011" classname="Ext4RecoverKb8StockRestoredOnceNoDebit"/>
+    <testcase name="Stock delta P1" time="0.011" classname="Ext4RecoverKb8StockRestoredOnceNoDebit"/>
+    <testcase name="Stock delta P2" time="0.011" classname="Ext4RecoverKb8StockRestoredOnceNoDebit"/>
+    <testcase name="Wallet verification succeeds" time="0.011" classname="Ext4RecoverKb8StockRestoredOnceNoDebit"/>
+    <testcase name="Balance delta C1" time="0.011" classname="Ext4RecoverKb8StockRestoredOnceNoDebit"/>
+    <testcase name="Balance delta C2" time="0.011" classname="Ext4RecoverKb8StockRestoredOnceNoDebit"/>
+  </testsuite>
+  <testsuite name="EXT-4 - Recover KB8 / Recovery saga logs" id="9ac35c79-dc58-4f20-bde4-102f825ca2b7" timestamp="2026-10-22T12:03:44.505Z" tests="3" failures="0" errors="0" time="0.251">
+    <testcase name="HTTP 200" time="0.251" classname="Ext4RecoverKb8RecoverySagaLogs"/>
+    <testcase name="Three original failures retained" time="0.251" classname="Ext4RecoverKb8RecoverySagaLogs"/>
+    <testcase name="Recovery completed" time="0.251" classname="Ext4RecoverKb8RecoverySagaLogs"/>
+  </testsuite>
+</testsuites>

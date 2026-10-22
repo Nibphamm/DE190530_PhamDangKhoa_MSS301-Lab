@@ -1,0 +1,12 @@
+{
+  "name": "mss301-saga-tests",
+  "private": true,
+  "scripts": {
+    "test": "node scripts/run-postman.cjs",
+    "test:extensions": "node scripts/run-extensions.cjs",
+    "test:failures": "python scripts/verify_failures.py"
+  },
+  "devDependencies": {
+    "newman": "6.2.1"
+  }
+}

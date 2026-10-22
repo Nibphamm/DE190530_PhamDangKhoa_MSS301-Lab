@@ -1,0 +1,102 @@
+{
+  "generatedAt": "2026-10-22T12:22:45.273765+00:00",
+  "reports": [
+    {
+      "report": "newman-base.json",
+      "requests": 49,
+      "assertions": 120,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "report": "extensions-choreography-failure.json",
+      "requests": 9,
+      "assertions": 14,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "report": "extensions-choreography-success.json",
+      "requests": 8,
+      "assertions": 14,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "report": "extensions-http-interface.json",
+      "requests": 6,
+      "assertions": 14,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "report": "extensions-outbox-failure.json",
+      "requests": 17,
+      "assertions": 14,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "report": "extensions-outbox-queued.json",
+      "requests": 4,
+      "assertions": 6,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "report": "extensions-outbox-resumed.json",
+      "requests": 9,
+      "assertions": 13,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "report": "extensions-recovery.json",
+      "requests": 7,
+      "assertions": 16,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "report": "extensions-shipping-idempotency.json",
+      "requests": 9,
+      "assertions": 17,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "report": "extensions-shipping-rejected.json",
+      "requests": 7,
+      "assertions": 17,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "report": "extensions-shipping-success.json",
+      "requests": 8,
+      "assertions": 17,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "report": "extensions-timeout.json",
+      "requests": 7,
+      "assertions": 16,
+      "failed": 0,
+      "errors": 0
+    }
+  ],
+  "totalRequests": 140,
+  "totalAssertions": 278,
+  "failedAssertions": 0,
+  "unitTests": 7,
+  "realOutages": {
+    "KB6": "passed",
+    "KB8": "passed"
+  },
+  "postmanDesktop": {
+    "collectionImported": "confirmed by user",
+    "runnerScreenshot": "pending: Codex Computer Use native pipe unavailable",
+    "sagaLogScreenshot": "pending: Codex Computer Use native pipe unavailable"
+  }
+}

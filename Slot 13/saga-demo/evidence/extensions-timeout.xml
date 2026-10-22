@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="MSS301 - Saga Extensions" tests="5" time="2.750">
+  <testsuite name="EXT-2 - Timeout after commit / Snapshot" id="195441a9-d0f3-4136-8c5a-bff80dec2a07" timestamp="2026-10-22T12:10:31.981Z" tests="2" failures="0" errors="0" time="0.019">
+    <testcase name="HTTP 200" time="0.019" classname="Ext2TimeoutAfterCommitSnapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.019" classname="Ext2TimeoutAfterCommitSnapshot"/>
+  </testsuite>
+  <testsuite name="EXT-2 - Timeout after commit / Lose payment acknowledgement" id="1a879ab7-943d-4740-96c5-309ae0e4363b" timestamp="2026-10-22T12:10:31.981Z" tests="3" failures="0" errors="0" time="2.410">
+    <testcase name="HTTP 200" time="2.410" classname="Ext2TimeoutAfterCommitLosePaymentAcknowledgement"/>
+    <testcase name="Order CANCELLED" time="2.410" classname="Ext2TimeoutAfterCommitLosePaymentAcknowledgement"/>
+    <testcase name="Saga COMPENSATED" time="2.410" classname="Ext2TimeoutAfterCommitLosePaymentAcknowledgement"/>
+  </testsuite>
+  <testsuite name="EXT-2 - Timeout after commit / No money or stock lost" id="fac45bb9-76ce-4e0b-b7a8-12201d204fbd" timestamp="2026-10-22T12:10:31.981Z" tests="7" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="Ext2TimeoutAfterCommitNoMoneyOrStockLost"/>
+    <testcase name="Both products exist" time="0.012" classname="Ext2TimeoutAfterCommitNoMoneyOrStockLost"/>
+    <testcase name="Stock delta P1" time="0.012" classname="Ext2TimeoutAfterCommitNoMoneyOrStockLost"/>
+    <testcase name="Stock delta P2" time="0.012" classname="Ext2TimeoutAfterCommitNoMoneyOrStockLost"/>
+    <testcase name="Wallet verification succeeds" time="0.012" classname="Ext2TimeoutAfterCommitNoMoneyOrStockLost"/>
+    <testcase name="Balance delta C1" time="0.012" classname="Ext2TimeoutAfterCommitNoMoneyOrStockLost"/>
+    <testcase name="Balance delta C2" time="0.012" classname="Ext2TimeoutAfterCommitNoMoneyOrStockLost"/>
+  </testsuite>
+  <testsuite name="EXT-2 - Timeout after commit / Inspect saga logs" id="55a1e97e-1283-4c4d-ad02-63bd86e158f5" timestamp="2026-10-22T12:10:31.981Z" tests="2" failures="0" errors="0" time="0.290">
+    <testcase name="HTTP 200" time="0.290" classname="Ext2TimeoutAfterCommitInspectSagaLogs"/>
+    <testcase name="Compensation LIFO" time="0.290" classname="Ext2TimeoutAfterCommitInspectSagaLogs"/>
+  </testsuite>
+  <testsuite name="EXT-2 - Timeout after commit / Payment receipt shows refund" id="a9406c59-c2c0-46a3-a8a8-3c7cce131441" timestamp="2026-10-22T12:10:31.981Z" tests="2" failures="0" errors="0" time="0.019">
+    <testcase name="HTTP 200" time="0.019" classname="Ext2TimeoutAfterCommitPaymentReceiptShowsRefund"/>
+    <testcase name="Committed payment REFUNDED" time="0.019" classname="Ext2TimeoutAfterCommitPaymentReceiptShowsRefund"/>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,1148 @@
+{
+  "orders": [
+    {
+      "amount": 2000.0,
+      "customerId": "C1",
+      "failureReason": null,
+      "id": 1,
+      "productId": "P1",
+      "quantity": 2,
+      "sagaStatus": "COMPLETED",
+      "status": "CONFIRMED"
+    },
+    {
+      "amount": 1000.0,
+      "customerId": "C2",
+      "failureReason": "402 - Số dư không đủ: còn 100.0, cần 1000.0",
+      "id": 2,
+      "productId": "P1",
+      "quantity": 1,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    {
+      "amount": 2000.0,
+      "customerId": "C1",
+      "failureReason": "409 - Không đủ hàng: còn 5, cần 100",
+      "id": 3,
+      "productId": "P2",
+      "quantity": 100,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    {
+      "amount": 10.0,
+      "customerId": "C1",
+      "failureReason": "404 - Không tìm thấy sản phẩm P9",
+      "id": 4,
+      "productId": "P9",
+      "quantity": 1,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C9",
+      "failureReason": "404 - Không tìm thấy ví của C9",
+      "id": 5,
+      "productId": "P2",
+      "quantity": 1,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "failureReason": "Service không phản hồi: I/O error on POST request for \"http://payment-service:8083/api/payments/pay\": null",
+      "id": 6,
+      "productId": "P2",
+      "quantity": 1,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "failureReason": "Service không phản hồi: I/O error on POST request for \"http://payment-service:8083/api/payments/pay\": null",
+      "id": 7,
+      "productId": "P2",
+      "quantity": 1,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    {
+      "amount": 80.0,
+      "customerId": "C1",
+      "failureReason": "409 - Shipping supports at most 3 items",
+      "id": 8,
+      "productId": "P2",
+      "quantity": 4,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    {
+      "amount": 80.0,
+      "customerId": "C1",
+      "failureReason": "409 - Shipping supports at most 3 items",
+      "id": 9,
+      "productId": "P2",
+      "quantity": 4,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "failureReason": null,
+      "id": 10,
+      "productId": "P2",
+      "quantity": 1,
+      "sagaStatus": "COMPLETED",
+      "status": "CONFIRMED"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "failureReason": "Service không phản hồi: I/O error on POST request for \"http://payment-service:8083/api/payments/pay\": Request cancelled",
+      "id": 11,
+      "productId": "P2",
+      "quantity": 1,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    {
+      "amount": 1000.0,
+      "customerId": "C2",
+      "failureReason": "402 - Số dư không đủ: còn 100.0, cần 1000.0",
+      "id": 12,
+      "productId": "P1",
+      "quantity": 1,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "failureReason": null,
+      "id": 13,
+      "productId": "P2",
+      "quantity": 1,
+      "sagaStatus": "COMPLETED",
+      "status": "CONFIRMED"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "failureReason": null,
+      "id": 14,
+      "productId": "P2",
+      "quantity": 1,
+      "sagaStatus": "COMPLETED",
+      "status": "CONFIRMED"
+    },
+    {
+      "amount": 1000.0,
+      "customerId": "C2",
+      "failureReason": "402 Payment Required: \"{\"timestamp\":\"2026-10-22T12:13:07.643Z\",\"status\":402,\"error\":\"Payment Required\",\"message\":\"Số dư không đủ: còn 100.0, cần 1000.0\",\"path\":\"/api/payments/pay\"}\"",
+      "id": 15,
+      "productId": "P1",
+      "quantity": 1,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "failureReason": null,
+      "id": 16,
+      "productId": "P2",
+      "quantity": 1,
+      "sagaStatus": "COMPLETED",
+      "status": "CONFIRMED"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "failureReason": null,
+      "id": 17,
+      "productId": "P2",
+      "quantity": 1,
+      "sagaStatus": "COMPLETED",
+      "status": "CONFIRMED"
+    },
+    {
+      "amount": 1000.0,
+      "customerId": "C2",
+      "failureReason": "402 - Số dư không đủ: còn 100.0, cần 1000.0",
+      "id": 18,
+      "productId": "P1",
+      "quantity": 1,
+      "sagaStatus": "COMPENSATED",
+      "status": "CANCELLED"
+    }
+  ],
+  "inventory/products": [
+    {
+      "id": "P1",
+      "name": "Laptop",
+      "price": 1000.0,
+      "stock": 8
+    },
+    {
+      "id": "P2",
+      "name": "Mouse",
+      "price": 20.0,
+      "stock": 0
+    }
+  ],
+  "inventory/reservations": [
+    {
+      "orderId": 1,
+      "productId": "P1",
+      "quantity": 2,
+      "status": "RESERVED"
+    },
+    {
+      "orderId": 2,
+      "productId": "P1",
+      "quantity": 1,
+      "status": "RELEASED"
+    },
+    {
+      "orderId": 5,
+      "productId": "P2",
+      "quantity": 1,
+      "status": "RELEASED"
+    },
+    {
+      "orderId": 6,
+      "productId": "P2",
+      "quantity": 1,
+      "status": "RELEASED"
+    },
+    {
+      "orderId": 7,
+      "productId": "P2",
+      "quantity": 1,
+      "status": "RELEASED"
+    },
+    {
+      "orderId": 8,
+      "productId": "P2",
+      "quantity": 4,
+      "status": "RELEASED"
+    },
+    {
+      "orderId": 9,
+      "productId": "P2",
+      "quantity": 4,
+      "status": "RELEASED"
+    },
+    {
+      "orderId": 10,
+      "productId": "P2",
+      "quantity": 1,
+      "status": "RESERVED"
+    },
+    {
+      "orderId": 11,
+      "productId": "P2",
+      "quantity": 1,
+      "status": "RELEASED"
+    },
+    {
+      "orderId": 12,
+      "productId": "P1",
+      "quantity": 1,
+      "status": "RELEASED"
+    },
+    {
+      "orderId": 13,
+      "productId": "P2",
+      "quantity": 1,
+      "status": "RESERVED"
+    },
+    {
+      "orderId": 14,
+      "productId": "P2",
+      "quantity": 1,
+      "status": "RESERVED"
+    },
+    {
+      "orderId": 15,
+      "productId": "P1",
+      "quantity": 1,
+      "status": "RELEASED"
+    },
+    {
+      "orderId": 16,
+      "productId": "P2",
+      "quantity": 1,
+      "status": "RESERVED"
+    },
+    {
+      "orderId": 17,
+      "productId": "P2",
+      "quantity": 1,
+      "status": "RESERVED"
+    },
+    {
+      "orderId": 18,
+      "productId": "P1",
+      "quantity": 1,
+      "status": "RELEASED"
+    }
+  ],
+  "payments": [
+    {
+      "amount": 2000.0,
+      "customerId": "C1",
+      "orderId": 1,
+      "status": "PAID"
+    },
+    {
+      "amount": 80.0,
+      "customerId": "C1",
+      "orderId": 8,
+      "status": "REFUNDED"
+    },
+    {
+      "amount": 80.0,
+      "customerId": "C1",
+      "orderId": 9,
+      "status": "REFUNDED"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "orderId": 10,
+      "status": "PAID"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "orderId": 11,
+      "status": "REFUNDED"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "orderId": 13,
+      "status": "PAID"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "orderId": 14,
+      "status": "PAID"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "orderId": 16,
+      "status": "PAID"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "orderId": 17,
+      "status": "PAID"
+    },
+    {
+      "amount": 20.0,
+      "customerId": "C1",
+      "orderId": 1792669678629,
+      "status": "REFUNDED"
+    }
+  ],
+  "payments/wallets": [
+    {
+      "customerId": "C1",
+      "balance": 2900.0
+    },
+    {
+      "customerId": "C2",
+      "balance": 100.0
+    }
+  ],
+  "shipping": [
+    {
+      "orderId": 10,
+      "productId": "P2",
+      "quantity": 1,
+      "status": "CREATED"
+    },
+    {
+      "orderId": 1792671637654,
+      "productId": "P2",
+      "quantity": 1,
+      "status": "CANCELLED"
+    }
+  ],
+  "sagaLogs": {
+    "1": [
+      {
+        "orderId": 1,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 1,
+        "time": "2026-10-22T11:47:54.207869"
+      },
+      {
+        "orderId": 1,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 2 P1",
+        "id": 2,
+        "time": "2026-10-22T11:47:54.488986"
+      },
+      {
+        "orderId": 1,
+        "step": "PROCESS_PAYMENT",
+        "result": "SUCCESS",
+        "message": "Đã thu 2000.0",
+        "id": 3,
+        "time": "2026-10-22T11:47:54.693773"
+      },
+      {
+        "orderId": 1,
+        "step": "CONFIRM_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPLETED",
+        "id": 4,
+        "time": "2026-10-22T11:47:54.710961"
+      }
+    ],
+    "2": [
+      {
+        "orderId": 2,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 5,
+        "time": "2026-10-22T11:47:55.593343"
+      },
+      {
+        "orderId": 2,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 1 P1",
+        "id": 6,
+        "time": "2026-10-22T11:47:55.634012"
+      },
+      {
+        "orderId": 2,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "402 - Số dư không đủ: còn 100.0, cần 1000.0",
+        "id": 7,
+        "time": "2026-10-22T11:47:55.699887"
+      },
+      {
+        "orderId": 2,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "Lần thử 1",
+        "id": 8,
+        "time": "2026-10-22T11:47:55.768655"
+      },
+      {
+        "orderId": 2,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPENSATED",
+        "id": 9,
+        "time": "2026-10-22T11:47:55.786749"
+      }
+    ],
+    "3": [
+      {
+        "orderId": 3,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 10,
+        "time": "2026-10-22T11:47:56.293743"
+      },
+      {
+        "orderId": 3,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "409 - Không đủ hàng: còn 5, cần 100",
+        "id": 11,
+        "time": "2026-10-22T11:47:56.359664"
+      },
+      {
+        "orderId": 3,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPENSATED",
+        "id": 12,
+        "time": "2026-10-22T11:47:56.414852"
+      }
+    ],
+    "4": [
+      {
+        "orderId": 4,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 13,
+        "time": "2026-10-22T11:47:56.868088"
+      },
+      {
+        "orderId": 4,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "404 - Không tìm thấy sản phẩm P9",
+        "id": 14,
+        "time": "2026-10-22T11:47:56.9164"
+      },
+      {
+        "orderId": 4,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPENSATED",
+        "id": 15,
+        "time": "2026-10-22T11:47:56.961717"
+      }
+    ],
+    "5": [
+      {
+        "orderId": 5,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 16,
+        "time": "2026-10-22T11:47:57.385916"
+      },
+      {
+        "orderId": 5,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 1 P2",
+        "id": 17,
+        "time": "2026-10-22T11:47:57.422181"
+      },
+      {
+        "orderId": 5,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "404 - Không tìm thấy ví của C9",
+        "id": 18,
+        "time": "2026-10-22T11:47:57.448254"
+      },
+      {
+        "orderId": 5,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "Lần thử 1",
+        "id": 19,
+        "time": "2026-10-22T11:47:57.504026"
+      },
+      {
+        "orderId": 5,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPENSATED",
+        "id": 20,
+        "time": "2026-10-22T11:47:57.526579"
+      }
+    ],
+    "6": [
+      {
+        "orderId": 6,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 21,
+        "time": "2026-10-22T11:49:03.902358"
+      },
+      {
+        "orderId": 6,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 1 P2",
+        "id": 22,
+        "time": "2026-10-22T11:49:03.948486"
+      },
+      {
+        "orderId": 6,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "Service không phản hồi: I/O error on POST request for \"http://payment-service:8083/api/payments/pay\": null",
+        "id": 23,
+        "time": "2026-10-22T11:49:07.929035"
+      },
+      {
+        "orderId": 6,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "Lần thử 1",
+        "id": 24,
+        "time": "2026-10-22T11:49:07.970172"
+      },
+      {
+        "orderId": 6,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPENSATED",
+        "id": 25,
+        "time": "2026-10-22T11:49:07.984985"
+      }
+    ],
+    "7": [
+      {
+        "orderId": 7,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 26,
+        "time": "2026-10-22T11:49:22.527344"
+      },
+      {
+        "orderId": 7,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 1 P2",
+        "id": 27,
+        "time": "2026-10-22T11:49:22.750169"
+      },
+      {
+        "orderId": 7,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "Service không phản hồi: I/O error on POST request for \"http://payment-service:8083/api/payments/pay\": null",
+        "id": 28,
+        "time": "2026-10-22T11:49:41.752821"
+      },
+      {
+        "orderId": 7,
+        "step": "COMPENSATION",
+        "result": "FAILED",
+        "message": "Lần thử 1: I/O error on POST request for \"http://inventory-service:8082/api/inventory/release/7\": HTTP connect timed out",
+        "id": 29,
+        "time": "2026-10-22T11:49:43.793545"
+      },
+      {
+        "orderId": 7,
+        "step": "COMPENSATION",
+        "result": "FAILED",
+        "message": "Lần thử 2: I/O error on POST request for \"http://inventory-service:8082/api/inventory/release/7\": HTTP connect timed out",
+        "id": 30,
+        "time": "2026-10-22T11:49:46.810128"
+      },
+      {
+        "orderId": 7,
+        "step": "COMPENSATION",
+        "result": "FAILED",
+        "message": "Lần thử 3: I/O error on POST request for \"http://inventory-service:8082/api/inventory/release/7\": HTTP connect timed out",
+        "id": 31,
+        "time": "2026-10-22T11:49:49.826522"
+      },
+      {
+        "orderId": 7,
+        "step": "RECOVERY",
+        "result": "SUCCESS",
+        "message": "REFUND_PAYMENT attempt 1",
+        "id": 32,
+        "time": "2026-10-22T12:03:44.834357"
+      },
+      {
+        "orderId": 7,
+        "step": "RECOVERY",
+        "result": "SUCCESS",
+        "message": "RELEASE_INVENTORY attempt 1",
+        "id": 33,
+        "time": "2026-10-22T12:03:44.949351"
+      },
+      {
+        "orderId": 7,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Manual recovery completed",
+        "id": 34,
+        "time": "2026-10-22T12:03:44.972915"
+      }
+    ],
+    "8": [
+      {
+        "orderId": 8,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 35,
+        "time": "2026-10-22T12:04:24.500929"
+      },
+      {
+        "orderId": 8,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 4 P2",
+        "id": 36,
+        "time": "2026-10-22T12:04:24.66655"
+      },
+      {
+        "orderId": 8,
+        "step": "PROCESS_PAYMENT",
+        "result": "SUCCESS",
+        "message": "Đã thu 80.0",
+        "id": 37,
+        "time": "2026-10-22T12:04:24.794273"
+      },
+      {
+        "orderId": 8,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "409 - Shipping supports at most 3 items",
+        "id": 38,
+        "time": "2026-10-22T12:04:25.096754"
+      },
+      {
+        "orderId": 8,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "Lần thử 1",
+        "id": 39,
+        "time": "2026-10-22T12:04:25.142043"
+      },
+      {
+        "orderId": 8,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "Lần thử 1",
+        "id": 40,
+        "time": "2026-10-22T12:04:25.167949"
+      },
+      {
+        "orderId": 8,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPENSATED",
+        "id": 41,
+        "time": "2026-10-22T12:04:25.186084"
+      }
+    ],
+    "9": [
+      {
+        "orderId": 9,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 42,
+        "time": "2026-10-22T12:10:07.089195"
+      },
+      {
+        "orderId": 9,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 4 P2",
+        "id": 43,
+        "time": "2026-10-22T12:10:07.239639"
+      },
+      {
+        "orderId": 9,
+        "step": "PROCESS_PAYMENT",
+        "result": "SUCCESS",
+        "message": "Đã thu 80.0",
+        "id": 44,
+        "time": "2026-10-22T12:10:07.279626"
+      },
+      {
+        "orderId": 9,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "409 - Shipping supports at most 3 items",
+        "id": 45,
+        "time": "2026-10-22T12:10:07.32574"
+      },
+      {
+        "orderId": 9,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "REFUND_PAYMENT - attempt 1",
+        "id": 46,
+        "time": "2026-10-22T12:10:07.380918"
+      },
+      {
+        "orderId": 9,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "RELEASE_INVENTORY - attempt 1",
+        "id": 47,
+        "time": "2026-10-22T12:10:07.412372"
+      },
+      {
+        "orderId": 9,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPENSATED",
+        "id": 48,
+        "time": "2026-10-22T12:10:07.433281"
+      }
+    ],
+    "10": [
+      {
+        "orderId": 10,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 49,
+        "time": "2026-10-22T12:10:08.355432"
+      },
+      {
+        "orderId": 10,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 1 P2",
+        "id": 50,
+        "time": "2026-10-22T12:10:08.398488"
+      },
+      {
+        "orderId": 10,
+        "step": "PROCESS_PAYMENT",
+        "result": "SUCCESS",
+        "message": "Đã thu 20.0",
+        "id": 51,
+        "time": "2026-10-22T12:10:08.431854"
+      },
+      {
+        "orderId": 10,
+        "step": "CREATE_SHIPPING",
+        "result": "SUCCESS",
+        "message": "Shipment CREATED",
+        "id": 52,
+        "time": "2026-10-22T12:10:08.518136"
+      },
+      {
+        "orderId": 10,
+        "step": "CONFIRM_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPLETED",
+        "id": 53,
+        "time": "2026-10-22T12:10:08.543804"
+      }
+    ],
+    "11": [
+      {
+        "orderId": 11,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 54,
+        "time": "2026-10-22T12:10:32.277286"
+      },
+      {
+        "orderId": 11,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 1 P2",
+        "id": 55,
+        "time": "2026-10-22T12:10:32.424034"
+      },
+      {
+        "orderId": 11,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "Service không phản hồi: I/O error on POST request for \"http://payment-service:8083/api/payments/pay\": Request cancelled",
+        "id": 56,
+        "time": "2026-10-22T12:10:34.438384"
+      },
+      {
+        "orderId": 11,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "REFUND_PAYMENT - attempt 1",
+        "id": 57,
+        "time": "2026-10-22T12:10:34.500674"
+      },
+      {
+        "orderId": 11,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "RELEASE_INVENTORY - attempt 1",
+        "id": 58,
+        "time": "2026-10-22T12:10:34.530711"
+      },
+      {
+        "orderId": 11,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPENSATED",
+        "id": 59,
+        "time": "2026-10-22T12:10:34.55154"
+      }
+    ],
+    "12": [
+      {
+        "orderId": 12,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order PENDING",
+        "id": 60,
+        "time": "2026-10-22T12:10:58.149289"
+      },
+      {
+        "orderId": 12,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Đã giữ 1 P1",
+        "id": 61,
+        "time": "2026-10-22T12:10:58.294798"
+      },
+      {
+        "orderId": 12,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "402 - Số dư không đủ: còn 100.0, cần 1000.0",
+        "id": 62,
+        "time": "2026-10-22T12:10:58.442142"
+      },
+      {
+        "orderId": 12,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "RELEASE_INVENTORY - attempt 1",
+        "id": 63,
+        "time": "2026-10-22T12:10:58.494969"
+      },
+      {
+        "orderId": 12,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Saga COMPENSATED",
+        "id": 64,
+        "time": "2026-10-22T12:10:58.517841"
+      }
+    ],
+    "13": [
+      {
+        "orderId": 13,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order and RESERVE command committed together",
+        "id": 65,
+        "time": "2026-10-22T12:11:18.420409"
+      },
+      {
+        "orderId": 13,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Outbox delivered RESERVE",
+        "id": 66,
+        "time": "2026-10-22T12:11:27.62444"
+      },
+      {
+        "orderId": 13,
+        "step": "PROCESS_PAYMENT",
+        "result": "SUCCESS",
+        "message": "Outbox delivered PAY",
+        "id": 67,
+        "time": "2026-10-22T12:11:28.262698"
+      },
+      {
+        "orderId": 13,
+        "step": "CONFIRM_ORDER",
+        "result": "SUCCESS",
+        "message": "Outbox saga COMPLETED",
+        "id": 68,
+        "time": "2026-10-22T12:11:28.798456"
+      }
+    ],
+    "14": [
+      {
+        "orderId": 14,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order and RESERVE command committed together",
+        "id": 69,
+        "time": "2026-10-22T12:12:55.530313"
+      },
+      {
+        "orderId": 14,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Outbox delivered RESERVE",
+        "id": 70,
+        "time": "2026-10-22T12:13:04.888382"
+      },
+      {
+        "orderId": 14,
+        "step": "PROCESS_PAYMENT",
+        "result": "SUCCESS",
+        "message": "Outbox delivered PAY",
+        "id": 71,
+        "time": "2026-10-22T12:13:05.493467"
+      },
+      {
+        "orderId": 14,
+        "step": "CONFIRM_ORDER",
+        "result": "SUCCESS",
+        "message": "Outbox saga COMPLETED",
+        "id": 72,
+        "time": "2026-10-22T12:13:06.034249"
+      }
+    ],
+    "15": [
+      {
+        "orderId": 15,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Order and RESERVE command committed together",
+        "id": 73,
+        "time": "2026-10-22T12:13:06.659187"
+      },
+      {
+        "orderId": 15,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "Outbox delivered RESERVE",
+        "id": 74,
+        "time": "2026-10-22T12:13:07.09646"
+      },
+      {
+        "orderId": 15,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "402 Payment Required: \"{\"timestamp\":\"2026-10-22T12:13:07.643Z\",\"status\":402,\"error\":\"Payment Required\",\"message\":\"Số dư không đủ: còn 100.0, cần 1000.0\",\"path\":\"/api/payments/pay\"}\"",
+        "id": 75,
+        "time": "2026-10-22T12:13:07.657132"
+      },
+      {
+        "orderId": 15,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "REFUND_PAYMENT",
+        "id": 76,
+        "time": "2026-10-22T12:13:08.214036"
+      },
+      {
+        "orderId": 15,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "RELEASE_INVENTORY",
+        "id": 77,
+        "time": "2026-10-22T12:13:08.769212"
+      },
+      {
+        "orderId": 15,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Outbox saga COMPENSATED",
+        "id": 78,
+        "time": "2026-10-22T12:13:09.306075"
+      }
+    ],
+    "16": [
+      {
+        "orderId": 16,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Publish OrderCreatedEvent",
+        "id": 79,
+        "time": "2026-10-22T12:15:20.485753"
+      },
+      {
+        "orderId": 16,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "InventoryReservedEvent",
+        "id": 80,
+        "time": "2026-10-22T12:18:29.780755"
+      },
+      {
+        "orderId": 16,
+        "step": "PROCESS_PAYMENT",
+        "result": "SUCCESS",
+        "message": "PaymentCompletedEvent",
+        "id": 81,
+        "time": "2026-10-22T12:18:29.843993"
+      },
+      {
+        "orderId": 16,
+        "step": "CONFIRM_ORDER",
+        "result": "SUCCESS",
+        "message": "Choreography COMPLETED",
+        "id": 82,
+        "time": "2026-10-22T12:18:29.847391"
+      }
+    ],
+    "17": [
+      {
+        "orderId": 17,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Publish OrderCreatedEvent",
+        "id": 83,
+        "time": "2026-10-22T12:18:30.659979"
+      },
+      {
+        "orderId": 17,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "InventoryReservedEvent",
+        "id": 84,
+        "time": "2026-10-22T12:18:30.78467"
+      },
+      {
+        "orderId": 17,
+        "step": "PROCESS_PAYMENT",
+        "result": "SUCCESS",
+        "message": "PaymentCompletedEvent",
+        "id": 85,
+        "time": "2026-10-22T12:18:30.816432"
+      },
+      {
+        "orderId": 17,
+        "step": "CONFIRM_ORDER",
+        "result": "SUCCESS",
+        "message": "Choreography COMPLETED",
+        "id": 86,
+        "time": "2026-10-22T12:18:30.819952"
+      }
+    ],
+    "18": [
+      {
+        "orderId": 18,
+        "step": "CREATE_ORDER",
+        "result": "SUCCESS",
+        "message": "Publish OrderCreatedEvent",
+        "id": 87,
+        "time": "2026-10-22T12:18:31.774385"
+      },
+      {
+        "orderId": 18,
+        "step": "RESERVE_INVENTORY",
+        "result": "SUCCESS",
+        "message": "InventoryReservedEvent",
+        "id": 88,
+        "time": "2026-10-22T12:18:31.8381"
+      },
+      {
+        "orderId": 18,
+        "step": "SAGA",
+        "result": "FAILED",
+        "message": "402 - Số dư không đủ: còn 100.0, cần 1000.0",
+        "id": 89,
+        "time": "2026-10-22T12:18:31.868851"
+      },
+      {
+        "orderId": 18,
+        "step": "COMPENSATION",
+        "result": "SUCCESS",
+        "message": "InventoryReleasedEvent",
+        "id": 90,
+        "time": "2026-10-22T12:18:31.907595"
+      },
+      {
+        "orderId": 18,
+        "step": "CANCEL_ORDER",
+        "result": "SUCCESS",
+        "message": "Choreography COMPENSATED",
+        "id": 91,
+        "time": "2026-10-22T12:18:31.912612"
+      }
+    ]
+  }
+}

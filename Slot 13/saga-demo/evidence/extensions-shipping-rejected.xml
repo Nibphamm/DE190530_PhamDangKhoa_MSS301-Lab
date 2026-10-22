@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="MSS301 - Saga Extensions" tests="5" time="0.806">
+  <testsuite name="EXT-1 - Shipping rejection / Snapshot" id="497fd08f-4476-4ff9-b549-1b52d9a53861" timestamp="2026-10-22T12:10:06.790Z" tests="2" failures="0" errors="0" time="0.016">
+    <testcase name="HTTP 200" time="0.016" classname="Ext1ShippingRejectionSnapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.016" classname="Ext1ShippingRejectionSnapshot"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping rejection / Shipping rejects four items" id="69fd945a-41fa-443d-844f-07a2003abb31" timestamp="2026-10-22T12:10:06.790Z" tests="3" failures="0" errors="0" time="0.462">
+    <testcase name="HTTP 200" time="0.462" classname="Ext1ShippingRejectionShippingRejectsFourItems"/>
+    <testcase name="Order CANCELLED" time="0.462" classname="Ext1ShippingRejectionShippingRejectsFourItems"/>
+    <testcase name="Saga COMPENSATED" time="0.462" classname="Ext1ShippingRejectionShippingRejectsFourItems"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping rejection / Wallet and stock restored" id="9747ba61-6e4b-4c0a-94b1-e081dfaa55c2" timestamp="2026-10-22T12:10:06.790Z" tests="7" failures="0" errors="0" time="0.015">
+    <testcase name="HTTP 200" time="0.015" classname="Ext1ShippingRejectionWalletAndStockRestored"/>
+    <testcase name="Both products exist" time="0.015" classname="Ext1ShippingRejectionWalletAndStockRestored"/>
+    <testcase name="Stock delta P1" time="0.015" classname="Ext1ShippingRejectionWalletAndStockRestored"/>
+    <testcase name="Stock delta P2" time="0.015" classname="Ext1ShippingRejectionWalletAndStockRestored"/>
+    <testcase name="Wallet verification succeeds" time="0.015" classname="Ext1ShippingRejectionWalletAndStockRestored"/>
+    <testcase name="Balance delta C1" time="0.015" classname="Ext1ShippingRejectionWalletAndStockRestored"/>
+    <testcase name="Balance delta C2" time="0.015" classname="Ext1ShippingRejectionWalletAndStockRestored"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping rejection / Inspect saga logs" id="061a6269-fcf3-4065-817b-445d0621d76d" timestamp="2026-10-22T12:10:06.790Z" tests="3" failures="0" errors="0" time="0.299">
+    <testcase name="HTTP 200" time="0.299" classname="Ext1ShippingRejectionInspectSagaLogs"/>
+    <testcase name="Exact execution sequence" time="0.299" classname="Ext1ShippingRejectionInspectSagaLogs"/>
+    <testcase name="Compensation LIFO" time="0.299" classname="Ext1ShippingRejectionInspectSagaLogs"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping rejection / Payment was refunded" id="4265a639-abad-4625-b02d-902fe1c6d2f8" timestamp="2026-10-22T12:10:06.790Z" tests="2" failures="0" errors="0" time="0.014">
+    <testcase name="HTTP 200" time="0.014" classname="Ext1ShippingRejectionPaymentWasRefunded"/>
+    <testcase name="Payment REFUNDED" time="0.014" classname="Ext1ShippingRejectionPaymentWasRefunded"/>
+  </testsuite>
+</testsuites>

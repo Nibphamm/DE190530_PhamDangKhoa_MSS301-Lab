@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="MSS301 - Saga Extensions" tests="6" time="0.414">
+  <testsuite name="EXT-1 - Shipping success / Snapshot" id="11d28634-5cc8-4dad-baf8-e10f32a32dfd" timestamp="2026-10-22T12:10:08.175Z" tests="2" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="Ext1ShippingSuccessSnapshot"/>
+    <testcase name="Wallet snapshot request succeeds" time="0.012" classname="Ext1ShippingSuccessSnapshot"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping success / Create shipment" id="87bf3f90-b043-44ed-aae8-dc9271432964" timestamp="2026-10-22T12:10:08.175Z" tests="3" failures="0" errors="0" time="0.221">
+    <testcase name="HTTP 200" time="0.221" classname="Ext1ShippingSuccessCreateShipment"/>
+    <testcase name="Order CONFIRMED" time="0.221" classname="Ext1ShippingSuccessCreateShipment"/>
+    <testcase name="Saga COMPLETED" time="0.221" classname="Ext1ShippingSuccessCreateShipment"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping success / One item purchased" id="45e81fca-263e-4bc6-b42f-e8c6bd990a6f" timestamp="2026-10-22T12:10:08.175Z" tests="7" failures="0" errors="0" time="0.016">
+    <testcase name="HTTP 200" time="0.016" classname="Ext1ShippingSuccessOneItemPurchased"/>
+    <testcase name="Both products exist" time="0.016" classname="Ext1ShippingSuccessOneItemPurchased"/>
+    <testcase name="Stock delta P1" time="0.016" classname="Ext1ShippingSuccessOneItemPurchased"/>
+    <testcase name="Stock delta P2" time="0.016" classname="Ext1ShippingSuccessOneItemPurchased"/>
+    <testcase name="Wallet verification succeeds" time="0.016" classname="Ext1ShippingSuccessOneItemPurchased"/>
+    <testcase name="Balance delta C1" time="0.016" classname="Ext1ShippingSuccessOneItemPurchased"/>
+    <testcase name="Balance delta C2" time="0.016" classname="Ext1ShippingSuccessOneItemPurchased"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping success / Inspect saga logs" id="4d2b6549-8a29-496c-9b41-56f576e23350" timestamp="2026-10-22T12:10:08.175Z" tests="2" failures="0" errors="0" time="0.010">
+    <testcase name="HTTP 200" time="0.010" classname="Ext1ShippingSuccessInspectSagaLogs"/>
+    <testcase name="Exact execution sequence" time="0.010" classname="Ext1ShippingSuccessInspectSagaLogs"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping success / Inspect shipment" id="7f637cc6-8ffb-4cf1-8e85-7e2ba1ca46b0" timestamp="2026-10-22T12:10:08.175Z" tests="2" failures="0" errors="0" time="0.127">
+    <testcase name="HTTP 200" time="0.127" classname="Ext1ShippingSuccessInspectShipment"/>
+    <testcase name="Shipment CREATED" time="0.127" classname="Ext1ShippingSuccessInspectShipment"/>
+  </testsuite>
+  <testsuite name="EXT-1 - Shipping success / Reject recovery of successful purchase" id="38a913b4-c40e-4575-8e12-ebef0ef83274" timestamp="2026-10-22T12:10:08.175Z" tests="1" failures="0" errors="0" time="0.028">
+    <testcase name="HTTP 409" time="0.028" classname="Ext1ShippingSuccessRejectRecoveryOfSuccessfulPurchase"/>
+  </testsuite>
+</testsuites>

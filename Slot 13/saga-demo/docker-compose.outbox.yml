@@ -2,3 +2,4 @@ services:
   order-service:
     environment:
       SPRING_PROFILES_ACTIVE: outbox
+      SAGA_OUTBOX_POLL_MS: ${OUTBOX_POLL_MS:-500}
