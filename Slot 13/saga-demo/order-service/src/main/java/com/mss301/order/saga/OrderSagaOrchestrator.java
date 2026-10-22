@@ -134,10 +134,10 @@ public class OrderSagaOrchestrator implements OrderPlacement {
                 try {
                     action.action().run();
                 } catch (RestClientException ex) {
-                    orderService.log(orderId, "COMPENSATION", "FAILED", "Lần thử " + n + ": " + ex.getMessage());
+                    orderService.log(orderId, "COMPENSATION", "FAILED", action.name() + " - attempt " + n + ": " + ex.getMessage());
                     throw ex;                       // ném lại để RetryTemplate thử lần tiếp theo
                 }
-                orderService.log(orderId, "COMPENSATION", "SUCCESS", "Lần thử " + n);
+                orderService.log(orderId, "COMPENSATION", "SUCCESS", action.name() + " - attempt " + n);
                 return null;
             });
             return true;

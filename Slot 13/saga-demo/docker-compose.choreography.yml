@@ -1,4 +1,10 @@
 services:
+  kafka-init:
+    image: apache/kafka:4.1.1
+    user: "0:0"
+    entrypoint: ["sh", "-c", "chown -R 1000:1000 /tmp/kraft-combined-logs"]
+    volumes:
+      - kafka-data:/tmp/kraft-combined-logs
   kafka:
     image: apache/kafka:4.1.1
     hostname: kafka
@@ -17,32 +23,50 @@ services:
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
     volumes:
       - kafka-data:/tmp/kraft-combined-logs
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
       interval: 5s
       timeout: 10s
       retries: 40
       start_period: 15s
+  kafka-topics:
+    image: apache/kafka:4.1.1
+    entrypoint: ["/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--create", "--if-not-exists", "--topic", "saga.events", "--partitions", "3", "--replication-factor", "1"]
+    depends_on:
+      kafka:
+        condition: service_healthy
   inventory-service:
     environment:
       SPRING_PROFILES_ACTIVE: choreography
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_KAFKA_CONSUMER_PROPERTIES_METADATA_MAX_AGE_MS: 1000
     depends_on:
       kafka:
         condition: service_healthy
+      kafka-topics:
+        condition: service_completed_successfully
   payment-service:
     environment:
       SPRING_PROFILES_ACTIVE: choreography
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_KAFKA_CONSUMER_PROPERTIES_METADATA_MAX_AGE_MS: 1000
     depends_on:
       kafka:
         condition: service_healthy
+      kafka-topics:
+        condition: service_completed_successfully
   order-service:
     environment:
       SPRING_PROFILES_ACTIVE: choreography
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_KAFKA_CONSUMER_PROPERTIES_METADATA_MAX_AGE_MS: 1000
     depends_on:
       kafka:
         condition: service_healthy
+      kafka-topics:
+        condition: service_completed_successfully
 volumes:
   kafka-data:
