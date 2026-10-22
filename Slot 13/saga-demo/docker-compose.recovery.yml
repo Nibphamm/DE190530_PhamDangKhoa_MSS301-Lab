@@ -1,0 +1,4 @@
+services:
+  order-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: recovery
