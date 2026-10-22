@@ -53,8 +53,12 @@ cần ít nhất bốn P2 trước kịch bản đó.
 
 Kết quả thực tế nằm trong `evidence/`: JSON đầy đủ request/response/assertion,
 JUnit XML, kết quả outage và bảng tổng hợp `verification-summary.json`.
-Ảnh Postman Desktop Runner và ảnh saga log là hạng mục riêng; trạng thái
-thực tế được ghi tại `evidence/VERIFICATION.md`.
+Postman Desktop Runner đã đạt **120/120 assertions**, không có lỗi;
+KB6 chạy thủ công đạt **18/18 assertions**, đã bật lại Payment sau outage.
+Xem [ảnh Runner](evidence/postman-runner-results.png),
+[saga log hoàn tất](evidence/postman-kb1-saga-logs-completed.png),
+[saga log bù trừ](evidence/postman-kb2-saga-logs-compensated.png)
+và [bảng bằng chứng đầy đủ](evidence/VERIFICATION.md).
 
 ## KB6, KB8: tắt container thật
 

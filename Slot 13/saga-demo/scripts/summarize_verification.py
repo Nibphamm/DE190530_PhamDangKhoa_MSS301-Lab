@@ -21,14 +21,17 @@ unit = ET.parse(EVIDENCE / "junit-order.xml").getroot()
 assert unit.attrib["failures"] == "0" and unit.attrib["errors"] == "0"
 failures = json.loads((EVIDENCE / "failure-scenarios.json").read_text(encoding="utf-8"))
 assert failures["KB6"]["passed"] and failures["KB8"]["passed"]
+desktop = json.loads((EVIDENCE / "postman-desktop-run.json").read_text(encoding="utf-8"))
+assert desktop["runner"]["failed"] == 0 and desktop["runner"]["errors"] == 0
+assert desktop["manualKB6"]["failed"] == 0
+for screenshot in desktop["screenshots"]:
+    assert (EVIDENCE / screenshot).is_file(), screenshot
 summary = {"generatedAt": datetime.now(timezone.utc).isoformat(), "reports": reports,
            "totalRequests": sum(r["requests"] for r in reports),
            "totalAssertions": sum(r["assertions"] for r in reports),
            "failedAssertions": 0, "unitTests": int(unit.attrib["tests"]),
            "realOutages": {"KB6": "passed", "KB8": "passed"},
-           "postmanDesktop": {"collectionImported": "confirmed by user",
-                              "runnerScreenshot": "pending: Codex Computer Use native pipe unavailable",
-                              "sagaLogScreenshot": "pending: Codex Computer Use native pipe unavailable"}}
+           "postmanDesktop": desktop}
 (EVIDENCE / "verification-summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 lines = ["# Verification evidence", "", f"Generated: {summary['generatedAt']}", "",
          "| Report | HTTP requests | Assertions | Failures |", "|---|---:|---:|---:|"]
@@ -37,11 +40,21 @@ lines += ["", f"Total: **{summary['totalAssertions']} assertions passed**, {summ
           f"JUnit: **{summary['unitTests']} tests passed**. Real container outages KB6 and KB8 passed.", "",
           "KB8 evidence records PENDING/COMPENSATING and exactly three failed compensation attempts.",
           "The recovery report subsequently verifies stock restoration and repeat recovery safety.", "",
-          "## Postman Desktop status", "", "The user confirmed importing the base collection into Postman Desktop.",
-          "Desktop Runner and saga-log screenshots are still pending. Codex Computer Use returned:",
-          "`Computer Use native pipe is unavailable ... The system cannot find the file specified. (os error 2)`.",
-          "Newman results above execute the Postman collections; they are not Desktop Runner screenshots.",
-          "No screenshot has been fabricated or labelled as a successful Desktop run.", "",
+          "## Postman Desktop results", "",
+          f"Run started: {desktop['runner']['startedAt']}. Computer Use controlled Postman through `@oai/sky`.",
+          "Collection Runner: **120/120 assertions passed**, 36 selected requests, one iteration, zero errors.",
+          "Duration: 10.885 seconds; average response time: 59 ms. The manual folder was excluded.",
+          "Manual KB6: **18/18 assertions passed** across five requests with Payment actually stopped.",
+          "Order 6 ended CANCELLED / COMPENSATED; stock and wallets were unchanged. Payment was restarted.",
+          "The user approved resetting only Saga volumes before this Desktop run.",
+          "Seed: P1=10, P2=5, C1=5000, C2=100. Final: P1=8, P2=5, C1=3000, C2=100.",
+          "Historical Newman, extension, KB8 and recovery reports above were preserved before the reset.",
+          "Desktop assertions are reported separately from the 278 historical Newman assertions.",
+          "See [Desktop run metadata](postman-desktop-run.json), [Runner text](postman-runner-results.txt),",
+          "[post-Runner data](postman-desktop-data.json) and [post-KB6 data](postman-desktop-kb6-data.json).", "",
+          "### Unedited Computer Use screenshots", ""]
+lines += [f"- [{name}]({name})" for name in desktop["screenshots"]]
+lines += ["",
           "## Reproduce", "", "Follow README.md for profile startup and test commands.",
           "Use a fresh KB8 outage before rerunning the one-time recovery folder.",
           "Ensure enough seed stock/balance; successful purchases consume resources.", ""]

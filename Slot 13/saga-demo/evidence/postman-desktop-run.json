@@ -1,0 +1,57 @@
+{
+  "tool": "Computer Use / @oai/sky",
+  "application": "Postman Desktop 11.87.4",
+  "collection": "MSS301 - Saga Demo (Spring Boot 4.1.1)",
+  "environment": "No environment; collection localhost variables",
+  "runner": {
+    "startedAt": "2026-10-22T21:39:07+07:00",
+    "iterations": 1,
+    "selectedRequests": 36,
+    "assertions": 120,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "durationMs": 10885,
+    "averageResponseMs": 59,
+    "manualFolderExcluded": true
+  },
+  "manualKB6": {
+    "orderId": 6,
+    "requests": 5,
+    "assertions": 18,
+    "failed": 0,
+    "assertionsByRequest": [
+      2,
+      4,
+      7,
+      3,
+      2
+    ],
+    "paymentActuallyStopped": true,
+    "paymentRestarted": true,
+    "stockAndWalletsUnchanged": true
+  },
+  "reset": {
+    "approvedByUser": true,
+    "scope": "Saga Compose project volumes only",
+    "seed": {
+      "P1": 10,
+      "P2": 5,
+      "C1": 5000,
+      "C2": 100
+    },
+    "historicalReportsPreserved": true
+  },
+  "screenshots": [
+    "postman-kb1-saga-logs-completed.png",
+    "postman-kb2-saga-logs-compensated.png",
+    "postman-kb2-saga-logs-start.png",
+    "postman-kb6-network-failure.png",
+    "postman-kb6-resource-verification.png",
+    "postman-kb6-saga-logs.png",
+    "postman-runner-configuration.png",
+    "postman-runner-results.png",
+    "postman-runner-summary.png",
+    "postman-kb6-reservation-verification.png"
+  ]
+}
