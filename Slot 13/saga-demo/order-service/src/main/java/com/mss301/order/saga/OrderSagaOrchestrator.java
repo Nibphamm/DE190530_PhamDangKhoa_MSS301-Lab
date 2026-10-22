@@ -37,6 +37,9 @@ public class OrderSagaOrchestrator {
     @Value("${saga.shipping.enabled:false}")
     private boolean shippingEnabled;
 
+    @Value("${saga.timeout-safe:false}")
+    private boolean timeoutSafe;
+
     // Spring Framework 7: RetryTemplate có sẵn trong spring-core (không cần thư viện spring-retry).
     // maxRetries(2) = 1 lần chạy đầu + 2 lần thử lại = tối đa 3 lần, cách nhau 1 giây.
     private final RetryTemplate compensationRetry = new RetryTemplate(
@@ -72,6 +75,10 @@ public class OrderSagaOrchestrator {
             }
 
             // ===== Bước 3: thanh toán (payment-service / SQL Server) =====
+            // Timeout can occur after the remote transaction committed.
+            if (timeoutSafe) {
+                compensations.push(new Compensation("REFUND_PAYMENT", () -> paymentClient.refund(orderId)));
+            }
             paymentClient.pay(orderId, req.customerId(), req.amount());
             orderService.log(orderId, "PROCESS_PAYMENT", "SUCCESS", "Đã thu " + req.amount());
             compensations.push(new Compensation("REFUND_PAYMENT", () -> paymentClient.refund(orderId)));
