@@ -6,6 +6,8 @@ import com.mss301.order.client.ShippingClient;
 import com.mss301.order.dto.CreateOrderRequest;
 import com.mss301.order.entity.*;
 import com.mss301.order.service.OrderService;
+import com.mss301.order.service.OrderPlacement;
+import org.springframework.context.annotation.Profile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,9 +27,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 // KHÔNG đặt @Transactional ở đây: orchestrator gọi qua mạng sang service khác,
 // mỗi bước đã là 1 local transaction riêng trên database riêng.
 @Component
+@Profile("!outbox & !choreography")
 @RequiredArgsConstructor
 @Slf4j
-public class OrderSagaOrchestrator {
+public class OrderSagaOrchestrator implements OrderPlacement {
 
     private final OrderService orderService;
     private final InventoryClient inventoryClient;

@@ -3,7 +3,7 @@ package com.mss301.order.controller;
 import com.mss301.order.dto.CreateOrderRequest;
 import com.mss301.order.entity.*;
 import com.mss301.order.repository.*;
-import com.mss301.order.saga.OrderSagaOrchestrator;
+import com.mss301.order.service.OrderPlacement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
 
-    private final OrderSagaOrchestrator orchestrator;
+    private final OrderPlacement orchestrator;
     private final OrderRepository orderRepository;
     private final SagaLogRepository sagaLogRepository;
 

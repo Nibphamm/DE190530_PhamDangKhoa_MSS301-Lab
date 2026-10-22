@@ -15,7 +15,7 @@ public class SagaLog {
     private Long orderId;
     private String step;      // VD: RESERVE_INVENTORY, PROCESS_PAYMENT, COMPENSATION
     private String result;    // SUCCESS / FAILED
-    @Column(length = 1000)
+    @Column(length = 2000)
     private String message;
     private LocalDateTime time;
 
