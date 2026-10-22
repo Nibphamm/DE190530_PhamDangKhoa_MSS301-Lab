@@ -84,7 +84,15 @@ public class OrderSagaOrchestrator implements OrderPlacement {
             }
             paymentClient.pay(orderId, req.customerId(), req.amount());
             orderService.log(orderId, "PROCESS_PAYMENT", "SUCCESS", "Đã thu " + req.amount());
-            compensations.push(new Compensation("REFUND_PAYMENT", () -> paymentClient.refund(orderId)));
+            if (!timeoutSafe) {
+                compensations.push(new Compensation("REFUND_PAYMENT", () -> paymentClient.refund(orderId)));
+            }
+
+            if (shippingEnabled) {
+                shippingClient.create(orderId, req.productId(), req.quantity());
+                orderService.log(orderId, "CREATE_SHIPPING", "SUCCESS", "Shipment CREATED");
+                compensations.push(new Compensation("CANCEL_SHIPPING", () -> shippingClient.cancel(orderId)));
+            }
 
             // ===== Bước cuối: xác nhận order =====
             orderService.confirmOrder(orderId);
