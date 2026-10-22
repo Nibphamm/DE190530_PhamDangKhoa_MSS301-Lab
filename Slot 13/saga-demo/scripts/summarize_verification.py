@@ -1,8 +1,6 @@
 """Build a concise, reproducible evidence index from the actual test reports."""
 import json
 import shutil
-import subprocess
-import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
