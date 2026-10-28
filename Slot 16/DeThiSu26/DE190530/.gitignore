@@ -2,3 +2,5 @@ target/
 .idea/
 *.iml
 *.log
+submission/
+__pycache__/
