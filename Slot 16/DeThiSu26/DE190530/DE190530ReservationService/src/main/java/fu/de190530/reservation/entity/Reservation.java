@@ -24,11 +24,11 @@ public class Reservation {
     @Nationalized
     private String guestPhone;
 
-    @Temporal(TemporalType.DATE)
+    @Convert(converter = fu.de190530.reservation.common.DateOnlyConverter.class)
     @Column(name = "check_in_date", nullable = false)
     private Date checkInDate;
 
-    @Temporal(TemporalType.DATE)
+    @Convert(converter = fu.de190530.reservation.common.DateOnlyConverter.class)
     @Column(name = "check_out_date", nullable = false)
     private Date checkOutDate;
 

@@ -24,11 +24,11 @@ public class Post {
     @Nationalized
     private String advertiserPhone;
 
-    @Temporal(TemporalType.DATE)
+    @Convert(converter = fu.de190530.post.common.DateOnlyConverter.class)
     @Column(name = "start_date", nullable = false)
     private Date startDate;
 
-    @Temporal(TemporalType.DATE)
+    @Convert(converter = fu.de190530.post.common.DateOnlyConverter.class)
     @Column(name = "end_date", nullable = false)
     private Date endDate;
 
