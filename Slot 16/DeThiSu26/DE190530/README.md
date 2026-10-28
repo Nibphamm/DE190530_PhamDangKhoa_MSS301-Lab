@@ -1,0 +1,105 @@
+# DE190530 ? Hotel practical exam
+
+B?i l?m c?a Ph?m ??ng Khoa (DE190530). M? `pom.xml` t?i th? m?c n?y b?ng IntelliJ IDEA, ch?n JDK 21 v? Load Maven Projects. Ba module ??u ??ng g?i JAR, d?ng Spring Boot 4.1.0; ReservationService v? Gateway d?ng Spring Cloud 2025.1.2, Swagger d?ng springdoc 3.0.3. B?n Hotel ??p ?ng y?u c?u Spring Boot >= 3.5.11.
+
+## C?u tr?c v? c?ng ch?y
+
+| Project | C?ng | API |
+| --- | --- | --- |
+| DE190530RoomService | 8081 | `/api/rooms` |
+| DE190530ReservationService | 8082 | `/api/reservations` |
+| DE190530HotelGateway | 8080 | Chuy?n ti?p c? hai API v? Swagger |
+
+Package ??ng ??: `fu.de190530.room`, `fu.de190530.reservation`, `fu.de190530.gateway`. C?c service c? entity, repository, interface service, service.impl, controller, dto, config v? common. ReservationService d?ng OpenFeign g?i RoomService, kh?ng truy v?n tr?c ti?p b?ng c?a service ngu?n.
+
+**Ch?y t?ng b?i ri?ng**: c? hai ?? ??u y?u c?u c?ng 8080/8081/8082. D?ng b? ?ang ch?y tr??c khi kh?i ??ng b? c?n l?i.
+
+## Database
+
+SQL Server ? `localhost:1433`, database `MSS301_2026_PE`, username/password m?c ??nh `sa`/`sa`, `ddl-auto=none` ??ng ??. Khi c?n ??i th?ng tin m?y kh?c, d?ng bi?n m?i tr??ng `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`.
+
+Database v? d? li?u m?u ?? ???c t?o tr?n m?y hi?n t?i. Ch? ch?y c?c l?nh sau khi thi?t l?p tr?n database m?i; `init.sql` t?o b?ng, kh?ng ph?i migration ch?y l?p l?i. Kh?ng ch?y l?i seed n?u mu?n gi? nguy?n b? d? li?u m?u.
+
+```powershell
+Set-Location database
+sqlcmd -S localhost -U sa -P sa -C -b -i init.sql
+sqlcmd -S localhost -U sa -P sa -C -b -i seed.sql
+Set-Location ..
+```
+
+`init.sql` d?ng c? ph?p SQLCMD `:r`; n?u ch?y trong SSMS, b?t SQLCMD Mode. Ho?c t?o database r?i ch?y hai script t?o b?ng theo th? t? rooms ? reservations. C? ba d?ng d? li?u m?u trong b?ng rooms; c?c booking ???c t?o qua API.
+
+B?n script Reservations ?i k?m b?i l?m b? t?y ch?n `OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF` ?? h? tr? SQL Server 2016; kh?ng ??i b?ng/c?t/r?ng bu?c. File resource g?c ???c gi? nguy?n. T?y ch?n n?y ch? c? t? SQL Server 2019 ([Microsoft Learn](https://learn.microsoft.com/en-us/troubleshoot/sql/database-engine/performance/resolve-pagelatch-ex-contention)).
+
+## Build v? ch?y
+
+T? th? m?c ch?a README n?y:
+
+```powershell
+mvn clean package
+```
+
+M? ba terminal t?i c?ng th? m?c, l?n l??t ch?y:
+
+```powershell
+java -jar DE190530RoomService/target/roomservice-1.0.0.jar
+```
+
+```powershell
+java -jar DE190530ReservationService/target/reservationservice-1.0.0.jar
+```
+
+```powershell
+java -jar DE190530HotelGateway/target/hotelgateway-1.0.0.jar
+```
+
+Swagger t?p trung: <http://localhost:8080/swagger-ui.html>. Ch?n m?t trong hai service ? `Select a definition`; Try it out g?i API qua gateway. M?i service c?ng c? Swagger ri?ng ? `http://localhost:8081/swagger-ui.html` v? `http://localhost:8082/swagger-ui.html`. OpenAPI JSON ? `/v3/api-docs`; gateway chuy?n ti?p t?i li?u qua `/docs/room/v3/api-docs` v? `/docs/reservation/v3/api-docs`.
+
+API/Swagger c?ng khai theo l?a ch?n c?a b?n. Gateway ch?p nh?n CORS t? m?i host, service c?ng h? tr? CORS, gateway lo?i b? header CORS tr?ng.
+
+## H?nh vi ?? tri?n khai
+
+- POST t?o m?i, tr? HTTP 201/status 1; server ??t tr?ng th?i m?c ??nh v? t? t?nh t?ng ph?.
+- PUT c?p nh?t t?ng ph?n; tr??ng b? qua ho?c null gi? gi? tr? c?. ID c?a b?n ghi do URL quy?t ??nh. Li?n k?t `roomId` trong Reservation ???c gi? nguy?n theo l?a ch?n c?a b?n; thay ??i li?n k?t trong request kh?ng ??i d? li?u. T?ng ph? ??u v?o kh?ng ???c d?ng ?? ghi ?? c?ng th?c.
+- GET theo ID tr? chi ti?t; GET danh s?ch c? ph?n trang 0-index, size m?c ??nh 10, t?i ?a 100 v? b? l?c ??ng ??. Danh s?ch Reservation ch?a object room l?ng nhau t? OpenFeign.
+- DELETE ch? ??i tr?ng th?i, kh?ng x?a d?ng ho?c l?m h?ng kh?a ngo?i.
+- Date nh?n/tr? `dd/MM/yyyy`, kh?ng c? ph?n gi?. End ph?i sau start; t?ng ph? d?a tr?n ch?nh l?ch ng?y, kh?ng nh?n th?m s? b?i/s? kh?ch.
+- Validation ki?m tra d? li?u b?t bu?c, ?? d?i, email, enum, gi?, gi?i h?n s? l??ng, ng?y v? ph?n trang. PUT b? t? ch?i kh?ng ghi m?t ph?n d? li?u v?o database.
+- Mapping: 200/201?1, 406?2, 226?3 (tr?ng room), 404?4, 400?5 (ngu?n kh?ng kh? d?ng khi t?o), 500?0. Response l?i c? `data=null`; timestamp UTC d?ng `yyyy-MM-ddTHH:mm:ssZ`.
+- Feign 404 ???c chuy?n th?nh 404/status 4; service ngu?n ng?ng ho?t ??ng tr? 500/status 0.
+
+Room m?c ??nh AVAILABLE; DELETE chuy?n MAINTENANCE. Ch? t?o Reservation khi room AVAILABLE v? `numberOfGuests <= capacity`. Reservation m?c ??nh CONFIRMED; DELETE chuy?n CANCELLED. `totalAmount = pricePerNight ? s? ??m`. PUT d?ng gi? hi?n t?i c?a room ban ??u v? ki?m tra l?i capacity; kh?ng y?u c?u room c?n AVAILABLE ?? c?p nh?t booking c? s?n. HotelGateway c? Spring Security v?i `permitAll` theo l?a ch?n c?a b?n.
+
+V? d? POST `http://localhost:8080/api/reservations` (v?i d? li?u seed ban ??u, ID ngu?n l? 1):
+
+```json
+{
+  "guestName": "Nguyen Van A",
+  "guestEmail": "a@example.com",
+  "guestPhone": "0901234567",
+  "checkInDate": "25/07/2026",
+  "checkOutDate": "28/07/2026",
+  "numberOfGuests": 2,
+  "roomId": 1
+}
+```
+
+## Ki?m th? th?c t?
+
+Sau khi build, d?ng c?c ?ng d?ng ?ang ch?y tr?n 8080?8082 r?i ch?y:
+
+```powershell
+python scripts/verify.py
+```
+
+Script Python ch? d?ng th? vi?n chu?n, t? kh?i ??ng ba JAR, ??i readiness, g?i HTTP qua gateway v?i SQL Server th?t, r?i d?ng ??ng c?c process do n? t?o. Script c? b??c ch? ??ng d?ng service ngu?n ?? ki?m tra l?i k?t n?i. N? t?o d? li?u ki?m th? c? prefix `e2e_` ri?ng cho t?ng l?n ch?y, gi? l?i d? li?u n?y ?? ki?m tra; kh?ng x?a d? li?u c? s?n. C? th? ch?y nhi?u l?n.
+
+K?t qu? l?n ki?m th? ?? th?c hi?n: **71/71 ki?m tra ??t**. Danh s?ch v? m?i tr??ng ki?m th? ? [VERIFICATION.md](VERIFICATION.md). Khi ch?y l?i, k?t qu? JSON l?u t?i `target/verification.json`, log t?i `target/e2e-logs/`. `mvn clean package` bi?n d?ch/??ng g?i; ki?m th? t?ch h?p HTTP ch?y ri?ng b?ng l?nh Python tr?n.
+
+## ??ng g?i n?p b?i
+
+```powershell
+python scripts/package_submission.py
+```
+
+T?o `submission/DE190530_Hotel.zip`, g?m source c?a ba project, Maven POM, c?u h?nh, SQL, h??ng d?n v? script ki?m th?. ZIP ?? lo?i `target`, file IDE, log v? cache. Script ki?m tra t?nh to?n v?n ZIP sau khi t?o. ZIP d?ng t?n b?t ??u b?ng StudentID ??ng ??; kh?ng c?n x?a JAR ?ang d?ng ?? ch?y local. C? th? ch?y `mvn clean` sau ki?m th? n?u mu?n d?n file build ngo?i ZIP.
